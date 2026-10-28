@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jian11323</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --fg: #e8eefc;
+      --muted: #9aa8c7;
+      --accent: #6ea8fe;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--fg);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1a2a55 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, #24304a 0%, transparent 50%),
+        var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+    }
+    main { max-width: 40rem; width: 100%; }
+    h1 {
+      margin: 0 0 0.4rem;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      letter-spacing: 0.02em;
+    }
+    p { margin: 0.5rem 0 1.4rem; color: var(--muted); line-height: 1.6; }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+    a:hover { border-bottom-color: currentColor; }
+    ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+    li a {
+      display: block;
+      padding: 0.9rem 1rem;
+      border: 1px solid rgba(110, 168, 254, 0.25);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      color: var(--fg);
+    }
+    li a:hover {
+      background: rgba(110, 168, 254, 0.08);
+      border-bottom-color: transparent;
+    }
+    .tag { color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Jian11323</h1>
+    <p>个人主页 · GitHub Pages</p>
+    <ul>
+      <li>
+        <a href="https://github.com/Jian11323/StarQuake" target="_blank" rel="noopener">
+          StarQuake <span class="tag">地震情报客户端</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/Jian11323" target="_blank" rel="noopener">
+          GitHub 主页
+        </a>
+      </li>
+    </ul>
+  </main>
+</body>
+</html>
