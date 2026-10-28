@@ -1,8 +1,10 @@
 # jian11323.github.io
 
-Jian11323 公开仓库介绍页（GitHub Pages）。
+Jian Project 站点静态镜像（由 `web/public` 预渲染）。
 
-- 站点：https://jian11323.github.io/
-- 风格对齐 [Jian Project API](https://api.sismotide.top/) 文档站（色板、侧栏章节、面板布局）
+- 首页：与 sismotide.top 同款介绍
+- `/api/` `/get/` `/status/`：API 文档套
+- `/starquake/` `/rolling-subtitle/`：作品介绍
+- `/welcome/`：API 欢迎入口页
 
-本地预览可直接打开 `index.html`。
+正式实时服务仍以 [api.sismotide.top](https://api.sismotide.top/) / [sismotide.top](https://sismotide.top/) 为准。

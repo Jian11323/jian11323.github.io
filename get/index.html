@@ -1,0 +1,2543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Jian Project GET API</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdn.jsdmirror.com/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css'">
+    <link href="https://fonts.googleapis.cn/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Sora:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" onerror="this.onerror=null;this.href=this.href.replace('://fonts.googleapis.cn/','://fonts.font.im/')">
+    <style>:root {
+  --primary-color: #1a9b8e;
+  --secondary-color: #5ec4b8;
+  --accent-color: #c4a574;
+  --light-color: #f7fafb;
+  --dark-color: #1a2332;
+  --gray-color: #4a5568;
+  --success-color: #00b894;
+  --warning-color: #fdcb6e;
+  --info-color: #0984e3;
+  --page-bg: #eef3f4;
+  --card-bg: #ffffff;
+  --border-radius-lg: 18px;
+  --border-radius-md: 12px;
+  --border-radius-sm: 8px;
+  --shadow-soft: 0 14px 30px rgba(15, 23, 42, 0.08);
+  --shadow-subtle: 0 6px 18px rgba(15, 23, 42, 0.04);
+  --transition: all 0.3s linear;
+  --site-header-h: 80px;
+  --site-shell-max: 1280px;
+  --site-shell-pad: 20px;
+  /* 正文底部 → 底栏：全站唯一间距来源，避免各页再叠 padding */
+  --site-end-gap: 48px;
+  /* 全站入场：线性、等距错开 */
+  --jp-enter-ease: linear;
+  --jp-enter-dur: 0.52s;
+  --jp-enter-dist: 14px;
+  --jp-enter-stagger: 0.08s;
+}
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
+  height: 100%;
+}
+body {
+  margin: 0;
+  min-height: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Noto Sans SC', Sora, sans-serif;
+  line-height: 1.6;
+  color: var(--dark-color);
+  background: transparent;
+  overflow-x: hidden;
+  max-width: 100%;
+  position: relative;
+  z-index: 1;
+}
+img, svg, video, iframe {
+  max-width: 100%;
+  height: auto;
+}
+/* 主内容区占满剩余高度；须高于 atmosphere(fixed z-index:0) */
+main,
+.page-stack,
+.page-main {
+  flex: 1 0 auto;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+.page-stack,
+.page-main:not(.page-main--docs) {
+  animation: jp-enter-fade calc(var(--jp-enter-dur) + 0.04s) var(--jp-enter-ease) var(--jp-enter-stagger) both;
+}
+.page-stack {
+  flex: 1 0 auto;
+}
+/* API 文档：禁止父级 transform，避免弄坏 fixed 侧栏 */
+.page-main--docs {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+.page-main--docs .layout,
+.page-main--docs .main {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+/* 其它页内层 main 不叠入场 */
+.page-main > main,
+.page-main main.main {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+.site-shell,
+.container {
+  width: 100%;
+  max-width: var(--site-shell-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: max(var(--site-shell-pad), env(safe-area-inset-left));
+  padding-right: max(var(--site-shell-pad), env(safe-area-inset-right));
+}
+header.site-header {
+  background-color: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  padding-top: env(safe-area-inset-top);
+  /* 顶栏自身 fixed，且内含移动端 fixed 菜单，禁用 transform */
+  animation: jp-enter-fade var(--jp-enter-dur) var(--jp-enter-ease) both;
+}
+.site-inner {
+  width: 100%;
+  max-width: var(--site-shell-max);
+  margin: 0 auto;
+  padding-left: max(var(--site-shell-pad), env(safe-area-inset-left));
+  padding-right: max(var(--site-shell-pad), env(safe-area-inset-right));
+}
+.site-header .site-inner {
+  max-width: var(--site-shell-max);
+}
+nav.site-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+}
+.site-header .logo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.03em;
+  font-family: Sora, 'Noto Sans SC', sans-serif;
+}
+.site-header .logo i {
+  margin-right: 10px;
+  font-size: 2rem;
+}
+.site-header .logo .logo-mark,
+footer.site-footer .footer-logo .logo-mark {
+  width: 36px;
+  height: 36px;
+  margin-right: 10px;
+  flex-shrink: 0;
+  display: block;
+  overflow: visible;
+}
+.site-header .logo i { display: none; }
+footer.site-footer .footer-logo i { display: none; }
+
+.site-header .nav-links {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.site-header .nav-links li {
+  margin-left: 2rem;
+  display: flex;
+  align-items: center;
+}
+.site-header .nav-links a {
+  text-decoration: none;
+  color: var(--gray-color);
+  font-weight: 500;
+  transition: var(--transition);
+  position: relative;
+  padding: 5px 0;
+}
+.site-header .nav-links a:hover,
+.site-header .nav-links a.active {
+  color: var(--primary-color);
+}
+.site-header .nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--primary-color);
+  transition: var(--transition);
+}
+.site-header .nav-links a:hover::after,
+.site-header .nav-links a.active::after {
+  width: 100%;
+}
+.site-header .nav-links a.nav-legal {
+  color: var(--primary-color);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.site-header .nav-links a.nav-legal i {
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+.site-header .mobile-menu-btn {
+  display: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--dark-color);
+  border: none;
+  background: transparent;
+  padding: 6px 8px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.page-main {
+  padding-top: 110px;
+  padding-bottom: 40px;
+}
+.hero-legal {
+  margin-top: 1.25rem;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: center;
+}
+.hero-legal a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.92);
+  color: #1a9b8e;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(26, 155, 142, 0.2);
+}
+.hero-legal a:hover { background: #fff; color: #147f74; }
+
+footer.site-footer {
+  background: transparent;
+  color: var(--gray-color);
+  padding: 28px 0 22px;
+  text-align: center;
+  margin: var(--site-end-gap) 0 0;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  display: block;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid rgba(26, 35, 50, 0.08);
+  animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) calc(var(--jp-enter-stagger) * 2) both;
+}
+footer.site-footer .site-inner {
+  width: 100%;
+  max-width: var(--site-shell-max);
+  margin-left: auto;
+  margin-right: auto;
+  background: transparent;
+}
+footer.site-footer a {
+  color: var(--gray-color);
+  text-decoration: none;
+}
+footer.site-footer .footer-content {
+  margin-bottom: 8px;
+}
+footer.site-footer .footer-logo {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--dark-color);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-family: Sora, 'Noto Sans SC', sans-serif;
+}
+footer.site-footer .footer-logo i {
+  font-size: 1.7rem;
+  color: var(--primary-color);
+}
+footer.site-footer .footer-content p {
+  color: var(--gray-color);
+  font-size: 0.95rem;
+  margin: 0;
+}
+footer.site-footer .copyright,
+footer.site-footer .copyright p {
+  color: var(--gray-color);
+  font-size: 0.9rem;
+  margin: 0 0 6px;
+}
+footer.site-footer .beian {
+  color: var(--gray-color);
+  font-size: 0.85rem;
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 8px;
+}
+footer.site-footer .beian a {
+  color: var(--gray-color);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+footer.site-footer .beian a:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+footer.site-footer .beian img {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+@media (max-width: 1024px) {
+  :root { --site-header-h: 68px; }
+  .site-header .logo { font-size: 1.35rem; }
+  .site-header .logo i { font-size: 1.55rem; margin-right: 8px; }
+  nav.site-nav { padding: 14px 0; }
+  .page-main { padding-top: 96px; }
+  .site-header .mobile-menu-btn { display: block; }
+  .site-header .nav-links {
+    position: fixed;
+    top: calc(var(--site-header-h) + env(safe-area-inset-top));
+    left: -100%;
+    width: 100%;
+    height: calc(100dvh - var(--site-header-h) - env(safe-area-inset-top));
+    background-color: #fff;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 12px 20px 32px;
+    overflow-y: auto;
+    transition: left 0.28s ease;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+  }
+  .site-header .nav-links.active { left: 0; }
+  .site-header .nav-links li {
+    margin: 0;
+    width: 100%;
+  }
+  .site-header .nav-links a {
+    display: flex;
+    width: 100%;
+    padding: 14px 4px;
+    font-size: 1.02rem;
+  }
+  .site-header .nav-links a::after { display: none; }
+  .site-header .nav-dropdown-menu {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    box-shadow: none;
+    margin: 0 0 8px 12px;
+  }
+}
+@media (max-width: 640px) {
+  :root {
+    --site-shell-pad: 14px;
+    --site-end-gap: 32px;
+  }
+  .site-header .logo { font-size: 1.2rem; }
+  .page-main { padding-top: 88px; padding-bottom: 28px; }
+  footer.site-footer { padding: 28px 0 20px; }
+  footer.site-footer .footer-logo { font-size: 1.45rem; }
+}
+
+/* —— 全站线性入场 —— */
+@keyframes jp-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--jp-enter-dist), 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes jp-enter-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.jp-enter {
+  animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) both;
+}
+.jp-enter-seq > * {
+  opacity: 0;
+  animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) both;
+}
+.jp-enter-seq > *:nth-child(1) { animation-delay: 0s; }
+.jp-enter-seq > *:nth-child(2) { animation-delay: calc(var(--jp-enter-stagger) * 1); }
+.jp-enter-seq > *:nth-child(3) { animation-delay: calc(var(--jp-enter-stagger) * 2); }
+.jp-enter-seq > *:nth-child(4) { animation-delay: calc(var(--jp-enter-stagger) * 3); }
+.jp-enter-seq > *:nth-child(5) { animation-delay: calc(var(--jp-enter-stagger) * 4); }
+.jp-enter-seq > *:nth-child(6) { animation-delay: calc(var(--jp-enter-stagger) * 5); }
+.jp-enter-seq > *:nth-child(7) { animation-delay: calc(var(--jp-enter-stagger) * 6); }
+.jp-enter-seq > *:nth-child(8) { animation-delay: calc(var(--jp-enter-stagger) * 7); }
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  main,
+  .page-stack,
+  .page-main,
+  .page-main--docs,
+  footer.site-footer,
+  .jp-enter,
+  .jp-enter-seq > * {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}.atmosphere {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 42%, #f4faf9 0%, #e8f0f1 55%, #dde7e9 100%);
+}
+.atmosphere .orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(48px);
+  will-change: transform, opacity;
+}
+.atmosphere .orb-a {
+  width: min(58vw, 480px);
+  height: min(58vw, 480px);
+  left: -8%;
+  top: -12%;
+  background: rgba(26, 155, 142, 0.28);
+  animation: jp-orb-a 18s ease-in-out infinite;
+}
+.atmosphere .orb-b {
+  width: min(48vw, 420px);
+  height: min(48vw, 420px);
+  right: -10%;
+  bottom: -8%;
+  background: rgba(196, 165, 116, 0.26);
+  animation: jp-orb-b 22s ease-in-out infinite;
+}
+.atmosphere .orb-c {
+  width: min(36vw, 300px);
+  height: min(36vw, 300px);
+  left: 42%;
+  top: 58%;
+  background: rgba(94, 196, 184, 0.18);
+  animation: jp-orb-c 16s ease-in-out infinite;
+}
+.atmosphere .ripple-field {
+  position: absolute;
+  left: 58%;
+  top: 40%;
+  width: 0;
+  height: 0;
+}
+.atmosphere .ripple {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: min(78vw, 620px);
+  height: min(78vw, 620px);
+  margin-left: calc(min(78vw, 620px) / -2);
+  margin-top: calc(min(78vw, 620px) / -2);
+  border: 1.5px solid rgba(26, 155, 142, 0.35);
+  border-radius: 50%;
+  opacity: 0;
+  animation: jp-ripple 6.5s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+.atmosphere .ripple:nth-child(2) {
+  border-color: rgba(26, 155, 142, 0.28);
+  animation-delay: 2.1s;
+}
+.atmosphere .ripple:nth-child(3) {
+  border-color: rgba(196, 165, 116, 0.32);
+  animation-delay: 4.2s;
+}
+.atmosphere .wave-canvas {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 8%;
+  height: 140px;
+  opacity: 0.5;
+}
+.atmosphere .wave-canvas svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.atmosphere .wave-canvas path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.atmosphere .wave-a {
+  stroke: rgba(26, 155, 142, 0.55);
+  stroke-width: 1.8;
+  animation: jp-wave 12s linear infinite;
+}
+.atmosphere .wave-b {
+  stroke: rgba(196, 165, 116, 0.45);
+  stroke-width: 1.4;
+  animation: jp-wave 18s linear infinite reverse;
+}
+.atmosphere .wave-c {
+  stroke: rgba(26, 155, 142, 0.28);
+  stroke-width: 1.2;
+  animation: jp-wave 9s linear infinite;
+}
+.atmosphere .grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: jp-grain 8s steps(6) infinite;
+}
+@keyframes jp-orb-a {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+  40% { transform: translate(12%, 18%) scale(1.12); opacity: 1; }
+  70% { transform: translate(4%, 28%) scale(0.94); opacity: 0.75; }
+}
+@keyframes jp-orb-b {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.65; }
+  35% { transform: translate(-16%, -12%) scale(1.1); opacity: 0.95; }
+  65% { transform: translate(-6%, -22%) scale(0.92); opacity: 0.7; }
+}
+@keyframes jp-orb-c {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+  50% { transform: translate(-30%, -70%) scale(1.2); opacity: 0.85; }
+}
+@keyframes jp-ripple {
+  0% { transform: scale(0.18); opacity: 0.55; }
+  70% { opacity: 0.18; }
+  100% { transform: scale(1); opacity: 0; }
+}
+@keyframes jp-wave {
+  from { transform: translateX(0); }
+  to { transform: translateX(-8.33%); }
+}
+@keyframes jp-grain {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-1%, 1%); }
+  50% { transform: translate(1%, -1%); }
+  75% { transform: translate(-1%, -1%); }
+}
+@media (max-width: 760px) {
+  .atmosphere .ripple-field { left: 50%; top: 28%; }
+  .atmosphere .wave-canvas { bottom: 4%; height: 100px; opacity: 0.38; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atmosphere .orb,
+  .atmosphere .ripple,
+  .atmosphere .wave-a,
+  .atmosphere .wave-b,
+  .atmosphere .wave-c,
+  .atmosphere .grain {
+    animation: none !important;
+  }
+  .atmosphere .orb { opacity: 0.55; }
+  .atmosphere .ripple { opacity: 0.15; transform: scale(0.7); }
+}</style>
+<script>if("scrollRestoration"in history)history.scrollRestoration="manual";window.addEventListener("DOMContentLoaded",function(){window.scrollTo(0,0);if(document.documentElement)document.documentElement.scrollTop=0;if(document.body)document.body.scrollTop=0;});</script><style>:root {
+  --primary-color: #1a9b8e; --secondary-color: #5ec4b8; --accent-color: #c4a574;
+  --light-color: #f7fafb; --dark-color: #1a2332; --gray-color: #4a5568;
+  --success-color: #00b894; --warning-color: #e17055; --caution-color: #fdcb6e;
+  --page-bg: #eef3f4; --card-bg: #ffffff;
+  --border-radius-lg: 18px; --border-radius-md: 12px; --border-radius-sm: 8px;
+  --shadow-soft: 0 14px 30px rgba(15, 23, 42, 0.08);
+  --shadow-subtle: 0 6px 18px rgba(15, 23, 42, 0.04);
+  --transition: all 0.3s ease;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans SC',sans-serif;background:transparent;color:var(--dark-color);line-height:1.65;min-height:100vh;overflow-x:hidden;max-width:100%}
+h1,h2,h3,h4{font-family:Sora,'Noto Sans SC',sans-serif;font-weight:700}
+a{color:var(--primary-color);text-decoration:none}
+a:hover{color:#147f74}
+
+/* 对齐 WHEWS：左栏固定锁一屏、内部自滚；右栏随页面滚，互不影响 */
+.page-main--docs{
+  font-size:1rem;
+  padding-top:calc(var(--site-header-h, 80px) + env(safe-area-inset-top, 0px));
+  padding-bottom:0;width:100%;max-width:none;
+}
+.layout{
+  max-width:none;margin:0;margin-left:280px;padding:12px 28px 48px 28px;
+  display:block;min-width:0;width:auto;box-sizing:border-box;
+}
+.sidebar{
+  position:fixed;
+  top:calc(var(--site-header-h, 80px) + env(safe-area-inset-top, 0px));
+  left:0;z-index:40;
+  box-sizing:border-box;
+  width:280px;
+  height:calc(100vh - var(--site-header-h, 80px) - env(safe-area-inset-top, 0px));
+  height:calc(100dvh - var(--site-header-h, 80px) - env(safe-area-inset-top, 0px));
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  padding:12px 12px 32px;
+  border-right:1px solid #dce8e6;
+  background:transparent;
+}
+.side-link{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:2px 0;color:var(--gray-color);font-weight:600;text-decoration:none;border-left:3px solid transparent;border-radius:6px;font-size:1rem}
+.side-link.active{color:var(--primary-color);border-left-color:var(--primary-color);background:rgba(26,155,142,.1)}
+.side-link:hover:not(.active){color:var(--primary-color);background:rgba(26,155,142,.06);border-left-color:rgba(94,196,184,.8)}
+/* 对齐 WHEWS .grp */
+.side-grp{font-size:.82rem;color:#94a3b8;letter-spacing:.08em;padding:18px 12px 8px;font-weight:700;text-transform:uppercase}
+.side-grp:first-child{padding-top:4px}
+/* 路径 tag 保持一行；中文标签可换行（不够宽时整块落到下一行，勿挤成竖排） */
+.side-path{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:10px 12px;margin:2px 0;color:var(--gray-color);font-size:1rem;text-decoration:none;border-left:3px solid transparent;border-radius:6px;min-width:0}
+.side-path:hover{color:var(--primary-color);background:rgba(26,155,142,.06);border-left-color:rgba(94,196,184,.8)}
+.side-path.active{color:var(--primary-color);font-weight:600;border-left-color:var(--primary-color);background:rgba(26,155,142,.1)}
+.side-path .tag{flex:0 1 auto;max-width:100%;font-family:'JetBrains Mono','Noto Sans SC',ui-monospace,monospace;font-size:.82rem;background:#e8f5f3;color:#7c88c9;padding:3px 8px;border-radius:4px;font-weight:500;white-space:nowrap;overflow-x:auto;line-height:1.35;-webkit-font-smoothing:antialiased}
+.side-path.active .tag{background:var(--primary-color);color:#fff}
+.side-path .path-label{flex:1 1 4.5em;min-width:4.5em;white-space:normal;font-size:.95rem;color:inherit;line-height:1.4}
+
+.main{min-width:0;padding:0}
+/* 章节用 #hash 切换，禁止浏览器锚点滚动把正文顶到固定顶栏下 */
+.page-main--docs .doc-sec{scroll-margin-top:0;scroll-margin-block-start:0}
+html{scroll-padding-top:0}
+/* 对齐 WHEWS：一次只显示一个 section */
+.doc-sec{display:none}
+.doc-sec.active{display:block}
+.panel{background:var(--card-bg);border-radius:var(--border-radius-lg);box-shadow:var(--shadow-soft);padding:28px 26px;border-top:3px solid var(--primary-color);overflow-x:hidden;max-width:100%;font-size:1em;line-height:1.65}
+.panel h1{font-size:1.55rem;margin-bottom:16px;color:var(--dark-color);display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.status-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:.8rem;font-weight:700;letter-spacing:.04em;background:#fff6db;color:#8a6d12;border:1px solid #f0e0a0}
+.panel h2{font-size:1.15rem;margin:28px 0 14px;color:var(--primary-color);padding-bottom:.45rem;border-bottom:1px solid #e5e7eb}
+.panel h3{font-size:1.02rem;margin:1.1rem 0 .55rem;color:var(--dark-color)}
+.panel p{color:var(--gray-color);margin-bottom:.6rem;font-size:1em}
+.panel ul{margin:.4rem 0 .8rem 1.4rem;color:var(--gray-color);font-size:1em}
+.info-box{background:var(--light-color);border-left:4px solid var(--secondary-color);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;padding:16px 18px;color:var(--gray-color);margin-bottom:1rem;font-size:1em}
+.info-box p{margin:.35rem 0}
+.info-box strong{color:var(--dark-color)}
+.address{font-family:'JetBrains Mono','Noto Sans SC',ui-monospace,monospace;background:#eef3f7;padding:.35rem .7rem;border-radius:6px;color:#147f74;font-weight:500;font-size:1em;word-break:break-all;-webkit-font-smoothing:antialiased;letter-spacing:.01em}
+.table-wrap{overflow:auto;-webkit-overflow-scrolling:touch;border-radius:var(--border-radius-md);border:1px solid #e4eeec;margin:12px 0 8px;max-width:100%}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:1em}
+th{background:#f2f8f7;color:var(--primary-color);text-align:left;padding:12px 14px;font-weight:600;font-size:1em;white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid #e4eeec;color:var(--gray-color);vertical-align:top;word-break:break-word;font-size:1em}
+tr:hover td{background:#fafbff}
+tr:last-child td{border-bottom:none}
+code,.info-box code,.panel p code,.panel li code,.table-wrap code{font-family:'JetBrains Mono','Noto Sans SC',ui-monospace,monospace;background:#e8f5f3;color:#147f74;padding:3px 7px;border-radius:4px;font-size:1em;font-weight:500;line-height:1.4;-webkit-font-smoothing:antialiased;letter-spacing:.01em}
+.msg-block{background:#f5f7ff;border:1px solid #e3e8fb;border-radius:var(--border-radius-md);padding:14px;margin:12px 0}
+.msg-block .label{font-size:1em;font-weight:600;color:var(--primary-color);margin-bottom:8px}
+.code-block{background:#111827;border-radius:var(--border-radius-sm);border-left:4px solid var(--secondary-color);padding:12px 14px;overflow-x:auto;max-width:100%;margin:.75rem 0}
+.code-block pre,.code-block code{background:transparent!important;color:#f9fafb;padding:0;font-size:.95em;font-weight:400}
+.code-block pre,.code-block{font-family:'JetBrains Mono','Noto Sans SC',ui-monospace,monospace;white-space:pre-wrap;word-break:break-word;line-height:1.55;-webkit-font-smoothing:antialiased}
+.code-block pre{margin:0}
+.json-key{color:#e2e8f0;font-weight:600}.json-string{color:#f8fafc}.json-number{color:#ffffff}.json-boolean{color:#e2e8f0}
+.protocol-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:1rem 0}
+.protocol-card{background:var(--light-color);border-radius:var(--border-radius-md);padding:1rem 1.1rem;border-top:3px solid var(--secondary-color)}
+.protocol-card.heartbeat{border-top-color:var(--caution-color)}
+.protocol-card.pong{border-top-color:var(--success-color)}
+.protocol-card.biz{border-top-color:var(--accent-color)}
+.protocol-card h3{font-size:1.05em;margin:0 0 .35rem;color:var(--primary-color)}
+.protocol-card p{font-size:.95em;margin:0;color:var(--gray-color)}
+.guide-banner{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
+.guide-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:#e8f5f3;color:var(--primary-color);font-size:.92em;font-weight:600}
+.mobile-toggle{display:none;border:1px solid #cfe0dd;background:#fff;color:var(--primary-color);border-radius:var(--border-radius-sm);padding:8px 12px;font-weight:600;cursor:pointer;margin-bottom:12px}
+
+@media(max-width:1024px){
+  .layout{margin-left:240px;padding:10px 18px 40px 20px}
+  .sidebar{width:240px}
+  .panel{padding:22px 18px}
+}
+@media(max-width:900px){
+  .layout{margin-left:0;padding:8px 14px 36px}
+  .sidebar{
+    position:static;
+    display:none;
+    width:auto;
+    height:auto;
+    max-height:min(70vh, calc(100dvh - var(--site-header-h, 68px) - 24px));
+    min-height:0;
+    border-right:none;
+    padding:0 0 12px;
+    border-bottom:1px solid #dce8e6;
+    margin-bottom:8px;
+    background:transparent;
+    z-index:auto;
+  }
+  .sidebar.open{display:block;overflow-y:auto}
+  .mobile-toggle{display:inline-flex;align-items:center;gap:8px;width:100%;justify-content:center}
+  .panel{padding:18px 14px}
+  .panel h1{font-size:1.25rem}
+}
+@media(max-width:720px){
+  .layout{padding:4px 12px 32px}
+  .table-wrap{overflow:visible;border:none}
+  .table-wrap table,.table-wrap thead,.table-wrap tbody,.table-wrap th,.table-wrap td,.table-wrap tr{display:block;width:100%}
+  .table-wrap thead{display:none}
+  .table-wrap tr{background:#fff;border:1px solid #e4eeec;border-radius:12px;padding:12px 14px;margin:0 0 10px;box-shadow:var(--shadow-subtle)}
+  .table-wrap td{display:grid;grid-template-columns:5.2em minmax(0,1fr);gap:6px 10px;padding:6px 0;border:none}
+  .table-wrap td::before{content:attr(data-label);font-weight:600;color:var(--primary-color);font-size:.92em}
+  .protocol-grid{grid-template-columns:1fr}
+}@keyframes apiAnnounceIn{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes apiAnnounceOut{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(8px)}}
+.api-announce-overlay{
+  position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(15,23,42,.55);
+  opacity:0;pointer-events:none;transition:opacity .22s ease;
+}
+.api-announce-overlay.is-visible{opacity:1;pointer-events:auto}
+.api-announce-overlay.is-visible .api-announce-modal{animation:apiAnnounceIn .28s linear forwards}
+.api-announce-overlay.is-hiding{opacity:0}
+.api-announce-overlay.is-hiding .api-announce-modal{animation:apiAnnounceOut .24s linear forwards}
+.api-announce-modal{
+  width:min(92vw,460px);padding:0;border-radius:var(--border-radius-lg,18px);overflow:hidden;
+  background:var(--card-bg,#fff);border:1px solid #e8ebf5;
+  box-shadow:var(--shadow-soft,0 14px 30px rgba(15,23,42,.08));color:var(--dark-color,#1a2332);text-align:left;
+}
+.api-announce-head{
+  display:flex;align-items:center;gap:12px;padding:18px 22px;
+  background:linear-gradient(90deg,rgba(26,155,142,.1),rgba(94,196,184,.06));
+  border-bottom:1px solid #e4eeec;border-top:3px solid var(--primary-color,#1a9b8e);
+}
+.api-announce-icon{
+  width:40px;height:40px;border-radius:12px;flex-shrink:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--primary-color,#1a9b8e);color:#fff;font-size:1.05rem;
+}
+.api-announce-title{margin:0;font-size:1.2rem;color:var(--dark-color,#1a2332);font-weight:700;line-height:1.3}
+.api-announce-sub{margin:.15rem 0 0;font-size:.82rem;color:#94a3b8;font-weight:500}
+.api-announce-body{padding:18px 22px 8px}
+.api-announce-lead{margin:0 0 12px;font-size:.95rem;line-height:1.7;color:var(--gray-color,#4a5568)}
+.api-announce-list{margin:0;padding:0 0 0 1.15rem;color:var(--gray-color,#4a5568);font-size:.93rem;line-height:1.7}
+.api-announce-list li{margin:0 0 .45rem}
+.api-announce-list li:last-child{margin-bottom:0}
+.api-announce-links{display:flex;flex-wrap:wrap;gap:8px;padding:14px 22px 4px;justify-content:center}
+.api-announce-links a{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;
+  background:#e8f5f3;color:var(--primary-color,#1a9b8e);font-weight:600;font-size:.86rem;text-decoration:none;
+  border:1px solid #e0e4f5;
+}
+.api-announce-links a:hover{background:#e4e8fa;color:#147f74}
+.api-announce-actions{padding:16px 22px 20px}
+.api-announce-btn{
+  width:100%;padding:12px 18px;border:none;border-radius:var(--border-radius-md,12px);cursor:pointer;
+  background:var(--primary-color,#1a9b8e);color:#fff;font-size:.96rem;font-weight:700;font-family:inherit;
+  box-shadow:0 8px 18px rgba(26,155,142,.28);transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.api-announce-btn:hover{background:#147f74;transform:translateY(-1px);box-shadow:0 10px 22px rgba(26,155,142,.34)}
+.api-announce-btn:active{transform:translateY(0)}
+.body--api-announce-open{overflow:hidden}
+@media(max-width:720px){
+  .api-announce-overlay{padding:12px;align-items:flex-end}
+  .api-announce-modal{width:100%;border-radius:18px 18px 12px 12px}
+}</style></head>
+<body>
+<div class="atmosphere" aria-hidden="true">
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+  <div class="ripple-field">
+    <div class="ripple"></div>
+    <div class="ripple"></div>
+    <div class="ripple"></div>
+  </div>
+  <div class="wave-canvas">
+    <svg viewBox="0 0 1200 140" preserveAspectRatio="none">
+      <path class="wave-c" d="M0 78 Q50 48 100 78 T200 78 T300 78 T400 78 T500 78 T600 78 T700 78 T800 78 T900 78 T1000 78 T1100 78 T1200 78 T1300 78 T1400 78"/>
+      <path class="wave-a" d="M0 70 Q50 38 100 70 T200 70 T300 70 T400 70 T500 70 T600 70 T700 70 T800 70 T900 70 T1000 70 T1100 70 T1200 70 T1300 70 T1400 70"/>
+      <path class="wave-b" d="M0 88 Q50 62 100 88 T200 88 T300 88 T400 88 T500 88 T600 88 T700 88 T800 88 T900 88 T1000 88 T1100 88 T1200 88 T1300 88 T1400 88"/>
+    </svg>
+  </div>
+  <div class="grain"></div>
+</div>    <header class="site-header">
+        <div class="site-inner">
+            <nav class="site-nav">
+                <a href="/" class="logo">
+                    <svg class="logo-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="36" height="36" aria-hidden="true" focusable="false"><g fill="none" stroke="#1A9B8E" stroke-width="3.2" stroke-linecap="round"><path d="M62 22c14 8 22 22 22 38s-8 30-22 38"/><path d="M54 30c9.5 6 15 16 15 26s-5.5 20-15 26"/></g><path fill="#1A2332" d="M42 18c0-2.2 1.8-4 4-4h6c2.2 0 4 1.8 4 4v40.5c0 11.2-8.4 20.5-19.5 21.4-7.2.6-13.9-2.3-18.2-7.6-1.5-1.8-1.2-4.5.7-5.9 1.8-1.4 4.4-1.1 5.9.6 2.7 3.3 6.8 5.1 11.1 4.7 6.5-.5 11.5-5.9 11.5-12.4V18z"/></svg>                    Jian Project                </a>
+
+                <div class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </div>
+
+                <ul class="nav-links">
+                    <li><a href="/" class="">首页</a></li>
+                    <li><a href="/api/" class="active">API</a></li>
+                    <li><a href="/status/" class="">服务状态</a></li>
+                    <li><a href="/terms/" class="nav-legal "><i class="fas fa-file-contract"></i> 服务条款</a></li>
+                    <li><a href="/privacy/" class="nav-legal "><i class="fas fa-user-shield"></i> 隐私政策</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <div class="page-main page-main--docs">
+    <div class="layout">
+        <aside class="sidebar" id="apiSidebar" aria-label="文档目录">
+            <div class="side-grp">概览</div>
+            <a class="side-link" href="#get-overview" data-sec="get-overview">服务说明</a>
+            <a class="side-link" href="#get-rate-limits" data-sec="get-rate-limits">频率限制</a>
+            <a class="side-link" href="#get-protocol" data-sec="get-protocol">消息协议</a>
+            <div class="side-grp">GET 路径</div>
+            <a class="side-path" href="#get-ip" data-sec="get-ip" title="IP 归属查询">
+                <span class="tag">/get/ip.json</span>
+                <span class="path-label">IP 归属查询</span>
+            </a>
+            <a class="side-path" href="#get-radar" data-sec="get-radar" title="全国最新雷达矢量图">
+                <span class="tag">/get/radar.json</span>
+                <span class="path-label">全国最新雷达</span>
+            </a>
+            <a class="side-path" href="#get-cloud" data-sec="get-cloud" title="全国最新云图">
+                <span class="tag">/get/cloud.json</span>
+                <span class="path-label">全国最新云图</span>
+            </a>
+            <a class="side-path" href="#get-precip-forecast" data-sec="get-precip-forecast" title="全国最新降水预报">
+                <span class="tag">/get/precip-forecast.json</span>
+                <span class="path-label">全国最新降水</span>
+            </a>
+            <a class="side-path" href="#get-typhoon" data-sec="get-typhoon" title="实时台风">
+                <span class="tag">/get/typhoon.json</span>
+                <span class="path-label">实时台风</span>
+            </a>
+            <a class="side-path" href="#get-station" data-sec="get-station" title="全国气象站">
+                <span class="tag">/get/station.json</span>
+                <span class="path-label">全国气象站</span>
+            </a>
+            <a class="side-path" href="#get-aqi" data-sec="get-aqi" title="全国最新城市 AQI 指数">
+                <span class="tag">/get/aqi.json</span>
+                <span class="path-label">全国最新城市 AQI</span>
+            </a>
+            <a class="side-path" href="#get-radar-taiwan" data-sec="get-radar-taiwan" title="台湾省雷达">
+                <span class="tag">/get/radar-taiwan.json</span>
+                <span class="path-label">台湾省雷达</span>
+            </a>
+            <a class="side-path" href="#get-radar-japan" data-sec="get-radar-japan" title="日本雷达">
+                <span class="tag">/get/radar-japan.json</span>
+                <span class="path-label">日本雷达</span>
+            </a>
+            <a class="side-path" href="#get-typhoon-global" data-sec="get-typhoon-global" title="全球热带气旋">
+                <span class="tag">/get/typhoon-global.json</span>
+                <span class="path-label">全球热带气旋</span>
+            </a>
+            <a class="side-path" href="#get-wind" data-sec="get-wind" title="全球实时风场">
+                <span class="tag">/get/wind.json</span>
+                <span class="path-label">全球风场</span>
+            </a>
+        </aside>
+
+        <main class="main">
+            <button class="mobile-toggle" type="button" id="sidebarToggle">
+                <i class="fas fa-bars"></i> 目录
+            </button>
+            <article class="panel doc-sec active" id="get-overview" data-title="服务说明 · GET API">
+                <h1>Jian Project GET 服务</h1>
+                <div class="guide-banner">
+                    <span class="guide-chip"><i class="fas fa-globe"></i> HTTPS GET</span>
+                    <span class="guide-chip"><i class="fas fa-file-code"></i> UTF-8 JSON</span>
+                    <span class="guide-chip"><i class="fas fa-gauge"></i> 每 IP ≥1 次/秒</span>
+                </div>
+                <div class="info-box">
+                    <p>IP 归属查询、国内雷达、云图、降水预报、台风、气象站、AQI、台湾省雷达、日本雷达、全球热带气旋与风场。适合学习与对接调试。</p>
+                    <p><strong>基础地址：</strong><code>/api/get</code></p>
+                    <p><strong>请求方式：</strong><code>GET /get/[路径].php</code>，例如 <code>/get/radar.php</code></p>
+                    <p><strong>鉴权：</strong>不需要访问令牌。防滥用见 <a href="#get-rate-limits">频率限制</a>。</p>
+                    <p><strong>编码：</strong>UTF-8 JSON</p>
+                    <p><strong>说明：</strong>本页为 GET API 字段说明；响应为 HTTPS GET JSON。</p>
+                </div>
+
+                <h2>请求地址</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>地址</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="类型">单端点</td>
+                                <td data-label="地址"><code>/get/[路径].php</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>可用路径</h2>
+                <p>侧栏「GET 路径」为字段说明（本页 #hash）；JSON 接口路径与下表一致。</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>路径</th>
+                                <th>source</th>
+                                <th>说明</th>
+                                <th>文档</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="路径"><code>/get/ip.json</code></td>
+                                <td data-label="source"><code>ip</code></td>
+                                <td data-label="说明">IP 归属查询</td>
+                                <td data-label="文档"><a href="#get-ip">查看</a></td>
+                            </tr>
+                            <tr>
+                                <td data-label="路径"><code>/get/radar.json</code></td>
+                                <td data-label="source"><code>radar</code></td>
+                                <td data-label="说明">全国最新雷达矢量图</td>
+                                <td data-label="文档"><a href="#get-radar">查看</a></td>
+                            </tr>
+                            <tr>
+                                <td data-label="路径"><code>/get/cloud.json</code></td>
+                                <td data-label="source"><code>cloud</code></td>
+                                <td data-label="说明">全国最新云图</td>
+                                <td data-label="文档"><a href="#get-cloud">查看</a></td>
+                            </tr>
+                            <tr>
+                                <td data-label="路径"><code>/get/precip-forecast.json</code></td>
+                                <td data-label="source"><code>precip-forecast</code></td>
+                                <td data-label="说明">全国最新降水预报</td>
+                                <td data-label="文档"><a href="#get-precip-forecast">查看</a></td>
+                            </tr>
+                            <tr>
+                                <td data-label="路径"><code>/get/typhoon.json</code></td>
+                                <td data-label="source"><code>typhoon</code></td>
+                                <td data-label="说明">实时台风</td>
+                                <td data-label="文档"><a href="#get-typhoon">查看</a></td>
+                            </tr>
+                            <tr>
+                                <td data-label="路径"><code>/get/station.json</code></td>
+                                <td data-label="source"><code>station</code></td>
+                                <td data-label="说明">全国气象站</td>
+                                <td data-label="文档"><a href="#get-station">查看</a></td>
+                            </tr>
+                            <tr>
+                                <td data-label="路径"><code>/get/aqi.json</code></td>
+                                <td data-label="source"><code>aqi</code></td>
+                                <td data-label="说明">全国最新城市 AQI 指数</td>
+                                <td data-label="文档"><a href="#get-aqi">查看</a></td>
+                            </tr>
+                            <tr>
+                                <td data-label="路径"><code>/get/radar-taiwan.json</code></td>
+                                <td data-label="source"><code>radar-taiwan</code></td>
+                                <td data-label="说明">台湾省雷达矢量图</td>
+                                <td data-label="文档"><a href="#get-radar-taiwan">查看</a></td>
+                            </tr>
+                            <tr>
+                                <td data-label="路径"><code>/get/radar-japan.json</code></td>
+                                <td data-label="source"><code>radar-japan</code></td>
+                                <td data-label="说明">日本雷达矢量图</td>
+                                <td data-label="文档"><a href="#get-radar-japan">查看</a></td>
+                            </tr>
+                            <tr>
+                                <td data-label="路径"><code>/get/typhoon-global.json</code></td>
+                                <td data-label="source"><code>typhoon-global</code></td>
+                                <td data-label="说明">全球热带气旋</td>
+                                <td data-label="文档"><a href="#get-typhoon-global">查看</a></td>
+                            </tr>
+                            <tr>
+                                <td data-label="路径"><code>/get/wind.json</code></td>
+                                <td data-label="source"><code>wind</code></td>
+                                <td data-label="说明">全球实时风场</td>
+                                <td data-label="文档"><a href="#get-wind">查看</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>基础瓦片地图</h2>
+                <div class="info-box">
+                    <p>底图 XYZ 瓦片由独立域名提供（标准 <code>{z}/{x}/{y}</code>），不走本页 JSON <code>/get/*</code>。</p>
+                    <p><strong>基础地址：</strong><code>https://tilemap.sismotide.top/{source}/{z}/{x}/{y}</code></p>
+                    <p>完整说明（左右分栏文档）：<a href="https://tilemap.sismotide.top/" target="_blank" rel="noopener">tilemap.sismotide.top</a></p>
+                </div>
+
+                <h2>通用约定</h2>
+                <ul>
+                    <li>全国最新雷达 / 云图 / 日本雷达：带图片与地图范围；全国最新降水预报：可叠地图的降雨区域；全国最新城市 AQI 指数：城市列表。</li>
+                    <li>size 为图像像素尺寸；time 为时次（北京时间）。</li>
+                    <li>缺字段省略，不补 0 或空串。</li>
+                    <li>响应格式见 <a href="#get-protocol">消息协议</a>；各路径字段见侧栏对应章节。</li>
+                    <li>仅供学习研究，不保证稳定性。</li>
+                </ul>
+            </article>
+
+            <article class="panel doc-sec" id="get-rate-limits" data-title="频率限制 · GET API">
+                <h1>频率限制</h1>
+                <p>本服务<strong>不需要访问令牌</strong>。为防滥用，按客户端真实 IP 做请求频率限制（经 CDN 时取 CDN / X-Forwarded-For 规则与站内一致）。</p>
+
+                <h2>默认限额</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>项目</th>
+                                <th>规则</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="项目">最小间隔</td>
+                                <td data-label="规则">同一客户端 IP 对业务路径至少间隔 <strong>1 秒</strong> 1 次</td>
+                            </tr>
+                            <tr>
+                                <td data-label="项目">计入路径</td>
+                                <td data-label="规则"><code>/get/ip.json</code>、<code>/get/radar.json</code>、<code>/get/cloud.json</code>、<code>/get/precip-forecast.json</code>、<code>/get/typhoon.json</code>、<code>/get/typhoon-global.json</code>、<code>/get/wind.json</code>、<code>/get/station.json</code>、<code>/get/aqi.json</code>、<code>/get/radar-japan.json</code>、<code>/get/radar-taiwan.json</code> 等业务 GET</td>
+                            </tr>
+                            <tr>
+                                <td data-label="项目">不计频</td>
+                                <td data-label="规则"><code>/health</code> 健康检查不计入上述间隔</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>超限响应</h2>
+                <p>超过频率限制时返回 HTTP <strong>429</strong>，正文为 JSON：</p>
+                <div class="msg-block">
+                    <div class="label">请求过于频繁</div>
+                    <div class="code-block"><pre><code>{
+  <span class="json-key">"error"</span>: <span class="json-string">"请求过于频繁，请至少间隔 1 秒"</span>
+}</code></pre></div>
+                </div>
+
+                <h2>对接建议</h2>
+                <ul>
+                    <li>客户端应对图片 / 列表结果做本地缓存，避免无意义轮询。</li>
+                    <li>收到 429 后应退避重试，勿瞬时连打。</li>
+                    <li>更多说明见 <a href="/terms/">服务条款</a> 与 <a href="/privacy/">隐私政策</a>。</li>
+                </ul>
+            </article>
+
+            <article class="panel doc-sec" id="get-protocol" data-title="消息协议 · GET API">
+                <h1>消息协议</h1>
+                <p>全部为 HTTPS <code>GET</code>，响应 <code>Content-Type: application/json; charset=utf-8</code>，UTF-8 JSON。</p>
+
+                <div class="protocol-grid">
+                    <div class="protocol-card biz">
+                        <h3><i class="fas fa-image"></i> 图片类</h3>
+                        <p>雷达 / 云图 / 日本雷达：status + time + size + image</p>
+                    </div>
+                    <div class="protocol-card heartbeat">
+                        <h3><i class="fas fa-cloud-rain"></i> 降水</h3>
+                        <p>全国最新降水预报（24/48/72 小时）</p>
+                    </div>
+                    <div class="protocol-card heartbeat">
+                        <h3><i class="fas fa-list"></i> 数组类</h3>
+                        <p>台风：顶级 JSON 数组</p>
+                    </div>
+                    <div class="protocol-card biz">
+                        <h3><i class="fas fa-wind"></i> 风场类</h3>
+                        <p>全球风场：status + time + source + data[u,v]</p>
+                    </div>
+                    <div class="protocol-card pong">
+                        <h3><i class="fas fa-map-marker-alt"></i> 列表类</h3>
+                        <p>气象站：time + count + data[]</p>
+                    </div>
+                    <div class="protocol-card heartbeat">
+                        <h3><i class="fas fa-wind"></i> 数组类 · AQI</h3>
+                        <p>城市 AQI：顶级 JSON 数组（城市汇总）</p>
+                    </div>
+                    <div class="protocol-card biz">
+                        <h3><i class="fas fa-network-wired"></i> IP 归属</h3>
+                        <p>国家/省市区/运营商/经纬度（缺字段省略）</p>
+                    </div>
+                </div>
+
+                <h2>图片类成功示例</h2>
+                <p>适用于 <code>/get/radar.json</code>、<code>/get/cloud.json</code>、<code>/get/radar-japan.json</code>、<code>/get/radar-taiwan.json</code>。降水见 <a href="#get-precip-forecast">全国最新降水预报</a>。</p>
+                <div class="msg-block">
+                    <div class="label">图片快照</div>
+                    <div class="code-block"><pre><code>{
+  <span class="json-key">"status"</span>: <span class="json-string">"success"</span>,
+  <span class="json-key">"time"</span>: <span class="json-string">"2026-09-22 10:36:00"</span>,
+  <span class="json-key">"size"</span>: {
+    <span class="json-key">"width"</span>: <span class="json-number">1349</span>,
+    <span class="json-key">"height"</span>: <span class="json-number">1208</span>
+  },
+  <span class="json-key">"image"</span>: <span class="json-string">"data:image/png;base64,..."</span>
+}</code></pre></div>
+                </div>
+
+                <h2>错误响应</h2>
+                <p>参数错误多为 HTTP 400；取数失败多为 502；频率超限为 429。正文统一为：</p>
+                <div class="msg-block">
+                    <div class="label">错误</div>
+                    <div class="code-block"><pre><code>{
+  <span class="json-key">"error"</span>: <span class="json-string">"错误说明"</span>
+}</code></pre></div>
+                </div>
+
+                <h2>查询参数</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>路径</th>
+                                <th>参数</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="路径"><code>/get/precip-forecast.json</code></td>
+                                <td data-label="参数"><code>period</code></td>
+                                <td data-label="说明">24 / 48 / 72，缺省 24</td>
+                            </tr>
+                            <tr>
+                                <td data-label="路径"><code>/get/station.json</code></td>
+                                <td data-label="参数"><code>type</code></td>
+                                <td data-label="说明">必填；temperature 等要素或 all</td>
+                            </tr>
+                            <tr>
+                                <td data-label="路径"><code>/get/ip.json</code></td>
+                                <td data-label="参数"><code>ip</code></td>
+                                <td data-label="说明">可选；缺省为客户端真实 IP</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>各路径完整字段见侧栏对应章节。</p>
+            </article>
+            <article class="panel doc-sec" id="get-ip" data-title="IP 归属查询 GET API 字段说明文档">
+                <h1>IP 归属查询 GET API 字段说明文档</h1>
+                <div class="info-box">
+                    <p><strong>请求地址：</strong><span class="address">/get/ip.php</span></p>
+                    <p><strong>说明：</strong>查询 IP 归属地</p>
+                </div>
+
+                <h2>示例</h2>
+                <div class="code-block"><pre><code>{
+  <span class="json-key">"ip"</span>: <span class="json-string">"222.137.1.1"</span>,
+  <span class="json-key">"country"</span>: <span class="json-string">"中国"</span>,
+  <span class="json-key">"country_code"</span>: <span class="json-string">"CN"</span>,
+  <span class="json-key">"province"</span>: <span class="json-string">"河南"</span>,
+  <span class="json-key">"city"</span>: <span class="json-string">"郑州"</span>,
+  <span class="json-key">"district"</span>: <span class="json-string">"金水"</span>,
+  <span class="json-key">"isp"</span>: <span class="json-string">"电信"</span>,
+  <span class="json-key">"lat"</span>: <span class="json-number">34.757</span>,
+  <span class="json-key">"lon"</span>: <span class="json-number">113.649</span>,
+  <span class="json-key">"location"</span>: <span class="json-string">"中国·河南·郑州·金水·电信"</span>,
+  <span class="json-key">"division_code"</span>: <span class="json-number">410105</span>
+}</code></pre></div>
+                <h2>字段说明</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="字段名"><code>ip</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">查询的 IP</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>skipped</code></td>
+                                <td data-label="类型">bool</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">私网/回环等不可查时为 true</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>country</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">国家中文名</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>country_code</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">ISO 3166-1 alpha-2</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>province</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">省/州</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>city</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">城市</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>district</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">区县</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>isp</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">运营商</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>lat</code></td>
+                                <td data-label="类型">number</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">纬度</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>lon</code></td>
+                                <td data-label="类型">number</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">经度</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>location</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">地名拼接摘要</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>division_code</code></td>
+                                <td data-label="类型">number</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">大陆行政区划代码</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>error</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">参数错误说明</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>注意事项</h2>
+                <ul>
+                    <li>GET；无需令牌。</li>
+                    <li>同一 IP 至少间隔 1 秒。</li>
+                    <li>大陆命中时省市区与 lat/lon 同源（区划中心点），不与全球库经纬度混拼。</li>
+                    <li>仅供参考，不对准确性做保证。</li>
+                </ul>
+            </article>
+            <article class="panel doc-sec" id="get-radar" data-title="全国雷达矢量图 GET API 字段说明文档">
+                <h1>全国雷达矢量图 GET API 字段说明文档</h1>
+                <div class="info-box">
+                    <p><strong>请求地址：</strong><span class="address">/get/radar.json</span></p>
+                    <p><strong>说明：</strong>获取全国最新雷达矢量图</p>
+                </div>
+
+                <h2>示例数据</h2>
+                <div class="code-block"><pre><code>{
+  <span class="json-key">"status"</span>: <span class="json-string">"success"</span>,
+  <span class="json-key">"time"</span>: <span class="json-string">"2026-09-24 09:42:00"</span>,
+  <span class="json-key">"bounds"</span>: {
+    <span class="json-key">"sw"</span>: [<span class="json-number">11.1784</span>, <span class="json-number">67.5</span>],
+    <span class="json-key">"ne"</span>: [<span class="json-number">55.7766</span>, <span class="json-number">140.625</span>]
+  },
+  <span class="json-key">"size"</span>: {
+    <span class="json-key">"width"</span>: <span class="json-number">1008</span>,
+    <span class="json-key">"height"</span>: <span class="json-number">662</span>
+  },
+  <span class="json-key">"image"</span>: <span class="json-string">"data:image/png;base64,..."</span>
+}</code></pre></div>
+                <h2>字段说明</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="字段名"><code>status</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">成功时为 success</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>time</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">时次（北京时间）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>bounds</code></td>
+                                <td data-label="类型">object</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">地图范围；sw/ne 为 [纬度, 经度]</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>size</code></td>
+                                <td data-label="类型">object</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">图片宽高（像素）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>image</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">图片内容（Base64）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>注意事项</h2>
+                <ul>
+                    <li>GET；无需令牌。</li>
+                    <li>同一 IP 至少间隔 1 秒。</li>
+                </ul>
+            </article>
+            <article class="panel doc-sec" id="get-cloud" data-title="实况云图 GET API 字段说明文档">
+                <h1>实况云图 GET API 字段说明文档</h1>
+                <div class="info-box">
+                    <p><strong>请求地址：</strong><span class="address">/get/cloud.php</span></p>
+                    <p><strong>说明：</strong>获取全国最新云图</p>
+                </div>
+
+                <h2>示例数据</h2>
+                <div class="code-block"><pre><code>{
+  <span class="json-key">"status"</span>: <span class="json-string">"success"</span>,
+  <span class="json-key">"time"</span>: <span class="json-string">"2026-09-24 09:50:00"</span>,
+  <span class="json-key">"bounds"</span>: {
+    <span class="json-key">"sw"</span>: [<span class="json-number">-2</span>, <span class="json-number">95</span>],
+    <span class="json-key">"ne"</span>: [<span class="json-number">43</span>, <span class="json-number">160</span>]
+  },
+  <span class="json-key">"size"</span>: {
+    <span class="json-key">"width"</span>: <span class="json-number">1024</span>,
+    <span class="json-key">"height"</span>: <span class="json-number">768</span>
+  },
+  <span class="json-key">"image"</span>: <span class="json-string">"data:image/png;base64,..."</span>
+}</code></pre></div>
+                <h2>字段说明</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="字段名"><code>status</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">成功时为 success</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>time</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">时次（北京时间）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>bounds</code></td>
+                                <td data-label="类型">object</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">地图范围；sw/ne 为 [纬度, 经度]</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>size</code></td>
+                                <td data-label="类型">object</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">图片宽高（像素）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>image</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">图片内容（Base64）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>注意事项</h2>
+                <ul>
+                    <li>GET；无需令牌。</li>
+                    <li>同一 IP 至少间隔 1 秒。</li>
+                </ul>
+            </article>
+            <article class="panel doc-sec" id="get-precip-forecast" data-title="全国最新降水预报 GET API 字段说明文档">
+                <h1>全国最新降水预报 GET API 字段说明文档</h1>
+                <div class="info-box">
+                    <p><strong>请求地址：</strong><span class="address">/get/precip-forecast.php?period=24</span></p>
+                    <p><strong>说明：</strong>获取全国最新降水预报（24 / 48 / 72 小时）</p>
+                </div>
+
+                <h2>示例数据</h2>
+                <div class="code-block"><pre><code>{
+  <span class="json-key">"type"</span>: <span class="json-string">"FeatureCollection"</span>,
+  <span class="json-key">"properties"</span>: {
+    <span class="json-key">"time"</span>: <span class="json-string">"2026-09-24 14:00:00"</span>
+  },
+  <span class="json-key">"features"</span>: [
+    {
+      <span class="json-key">"type"</span>: <span class="json-string">"Feature"</span>,
+      <span class="json-key">"properties"</span>: {
+        <span class="json-key">"symbol"</span>: <span class="json-number">0</span>,
+        <span class="json-key">"level"</span>: <span class="json-string">"小雨"</span>,
+        <span class="json-key">"fillColor"</span>: <span class="json-string">"rgba(164, 245, 140, 1)"</span>,
+        <span class="json-key">"color"</span>: <span class="json-string">"rgba(164, 245, 140, 1)"</span>
+      },
+      <span class="json-key">"geometry"</span>: {
+        <span class="json-key">"type"</span>: <span class="json-string">"Polygon"</span>,
+        <span class="json-key">"coordinates"</span>: [[[<span class="json-number">115.758</span>, <span class="json-number">37.316</span>]]]
+      }
+    }
+  ]
+}</code></pre></div>
+                <h2>字段说明</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="字段名"><code>type</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">固定 FeatureCollection</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>properties.time</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">预报时间</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>features</code></td>
+                                <td data-label="类型">array</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">降雨区域列表</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>features[].properties.symbol</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">雨量等级数字</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>features[].properties.level</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">雨量等级文字（小雨/中雨等）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>features[].properties.fillColor</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">填充颜色</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>features[].properties.color</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">边线颜色</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>features[].geometry</code></td>
+                                <td data-label="类型">object</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">区域坐标（经度在前）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>注意事项</h2>
+                <ul>
+                    <li>GET；period 为 24 / 48 / 72，缺省 24。</li>
+                    <li>无需令牌；同一 IP 至少间隔 1 秒。</li>
+                </ul>
+            </article>
+            <article class="panel doc-sec" id="get-typhoon" data-title="实时台风 GET API 字段说明文档">
+                <h1>实时台风 GET API 字段说明文档</h1>
+                <div class="info-box">
+                    <p><strong>请求地址：</strong><span class="address">/get/typhoon.php</span></p>
+                    <p><strong>说明：</strong>获取当前西太平洋及南海活跃台风</p>
+                </div>
+
+                <h2>示例数据</h2>
+                <div class="code-block"><pre><code>[
+  {
+    <span class="json-key">"id"</span>: <span class="json-string">"202625"</span>,
+    <span class="json-key">"name"</span>: <span class="json-string">"杜鹃"</span>,
+    <span class="json-key">"name_en"</span>: <span class="json-string">"DUJUAN"</span>,
+    <span class="json-key">"latitude"</span>: <span class="json-number">38.2</span>,
+    <span class="json-key">"longitude"</span>: <span class="json-number">147.4</span>,
+    <span class="json-key">"moveDirection"</span>: <span class="json-string">"东北东"</span>,
+    <span class="json-key">"moveSpeed"</span>: <span class="json-number">50</span>,
+    <span class="json-key">"power"</span>: <span class="json-number">10</span>,
+    <span class="json-key">"pressure"</span>: <span class="json-number">985</span>,
+    <span class="json-key">"windSpeed"</span>: <span class="json-number">25</span>,
+    <span class="json-key">"type"</span>: <span class="json-string">"强热带风暴"</span>,
+    <span class="json-key">"radius7"</span>: <span class="json-string">"400|300|300|300"</span>,
+    <span class="json-key">"updateTime"</span>: <span class="json-string">"2026-09-22 08:00:00"</span>,
+    <span class="json-key">"points"</span>: []
+  }
+]</code></pre></div>
+                <h2>字段说明</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="字段名"><code>id</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">台风编号（如 202625）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>name</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">中文名</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>name_en</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">英文名</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>latitude</code></td>
+                                <td data-label="类型">number</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">中心纬度</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>longitude</code></td>
+                                <td data-label="类型">number</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">中心经度</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>moveDirection</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">移向</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>moveSpeed</code></td>
+                                <td data-label="类型">number</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">移速 km/h</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>power</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">中心附近最大风力等级</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>pressure</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">中心气压 hPa</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>windSpeed</code></td>
+                                <td data-label="类型">number</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">中心附近最大风速 m/s</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>type</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">强度等级文案</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>radius7</code></td>
+                                <td data-label="类型">number|string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">七级风圈；四象限时为原样字符串如 400|300|300|300</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>radius10</code></td>
+                                <td data-label="类型">number|string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">十级风圈；规则同 radius7</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>updateTime</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">最新实况点时间（北京时间）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>points</code></td>
+                                <td data-label="类型">array</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">完整实况路径点（有则保留）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>注意事项</h2>
+                <ul>
+                    <li>响应为 JSON 数组；无活跃台风时为 []。</li>
+                    <li>缺字段则省略，不填 0 或空串。</li>
+                    <li>四象限风圈不压成单个假半径。</li>
+                    <li>GET；无需令牌；同一 IP 至少间隔 1 秒。</li>
+                </ul>
+            </article>
+            <article class="panel doc-sec" id="get-station" data-title="全国气象站 GET API 字段说明文档">
+                <h1>全国气象站 GET API 字段说明文档</h1>
+                <div class="info-box">
+                    <p><strong>请求地址：</strong><span class="address">/get/station.php?type=temperature</span></p>
+                    <p><strong>说明：</strong>获取全国气象站指定要素（含台湾省）；type 必填，type=all 返回该站全部可用要素</p>
+                </div>
+
+                <h2>示例数据</h2>
+                <div class="code-block"><pre><code>{
+  <span class="json-key">"time"</span>: <span class="json-string">"2026-09-22 11:00"</span>,
+  <span class="json-key">"count"</span>: <span class="json-number">3200</span>,
+  <span class="json-key">"data"</span>: [
+    {
+      <span class="json-key">"sta_name"</span>: <span class="json-string">"北京"</span>,
+      <span class="json-key">"stationid"</span>: <span class="json-string">"54511"</span>,
+      <span class="json-key">"lat"</span>: <span class="json-string">"39.8"</span>,
+      <span class="json-key">"lon"</span>: <span class="json-string">"116.47"</span>,
+      <span class="json-key">"val"</span>: <span class="json-string">"25.8"</span>
+    },
+    {
+      <span class="json-key">"sta_name"</span>: <span class="json-string">"臺北"</span>,
+      <span class="json-key">"stationid"</span>: <span class="json-string">"466920"</span>,
+      <span class="json-key">"lat"</span>: <span class="json-string">"25.039439"</span>,
+      <span class="json-key">"lon"</span>: <span class="json-string">"121.506628"</span>,
+      <span class="json-key">"val"</span>: <span class="json-string">"29.5"</span>
+    }
+  ]
+}</code></pre></div>
+                <h2>字段说明</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="字段名"><code>time</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">时次（北京时间）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>count</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">本响应 data 条数</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>data</code></td>
+                                <td data-label="类型">array</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">站点数组</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>sta_name</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">站名</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>stationid</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">站号</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>lat</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">纬度</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>lon</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">经度</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>val</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">条件</td>
+                                <td data-label="说明">单要素查询时的数值；type=all 时不使用此字段</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>fx</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">风向角度（风速类可能出现）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>temperature</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">type=all 时的气温</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>pressure</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">type=all 时的气压</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>humidity</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">type=all 时的相对湿度</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>windspeed</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">type=all 时的风速</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>rain</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">type=all 时的降水</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>visibility</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">type=all 时的能见度</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>注意事项</h2>
+                <ul>
+                    <li>type 必填：temperature / pressure / windspeed / maxwindspeed24h / humidity / visibility / rain / all。</li>
+                    <li>type=all 时展开各要素；缺测字段省略。</li>
+                    <li>含台湾省站点；同站号去重保留一条。</li>
+                    <li>缺测值（如 -99）不出现在响应中。</li>
+                    <li>maxwindspeed24h 暂不可用时 data 可能为空数组。</li>
+                    <li>GET；无需令牌；同一 IP 至少间隔 1 秒。</li>
+                </ul>
+            </article>
+            <article class="panel doc-sec" id="get-aqi" data-title="全国最新城市 AQI 指数">
+                <h1>全国最新城市 AQI 指数</h1>
+                <div class="info-box">
+                    <p><strong>请求地址：</strong><span class="address">/get/aqi.php</span></p>
+                    <p><strong>说明：</strong>全国最新城市空气质量指数（AQI）</p>
+                </div>
+
+                <h2>示例数据</h2>
+                <div class="code-block"><pre><code>[
+  {
+    <span class="json-key">"TimePoint"</span>: <span class="json-string">"2026-09-24T09:00:00"</span>,
+    <span class="json-key">"AQI"</span>: <span class="json-string">"43"</span>,
+    <span class="json-key">"COLevel"</span>: <span class="json-number">1</span>,
+    <span class="json-key">"NO2Level"</span>: <span class="json-number">1</span>,
+    <span class="json-key">"O3Level"</span>: <span class="json-number">1</span>,
+    <span class="json-key">"PM10Level"</span>: <span class="json-number">1</span>,
+    <span class="json-key">"PM2_5Level"</span>: <span class="json-number">1</span>,
+    <span class="json-key">"SO2Level"</span>: <span class="json-number">1</span>,
+    <span class="json-key">"Area"</span>: <span class="json-string">"惠州市"</span>,
+    <span class="json-key">"CityCode"</span>: <span class="json-number">441300</span>,
+    <span class="json-key">"AqiLevel"</span>: <span class="json-number">1</span>,
+    <span class="json-key">"Quality"</span>: <span class="json-string">"优"</span>,
+    <span class="json-key">"Measure"</span>: <span class="json-string">"各类人群可正常活动"</span>,
+    <span class="json-key">"Unheathful"</span>: <span class="json-string">"空气质量令人满意，基本无空气污染"</span>,
+    <span class="json-key">"Latitude"</span>: <span class="json-string">"22.909185714285714"</span>,
+    <span class="json-key">"Longitude"</span>: <span class="json-string">"114.47344285714286"</span>,
+    <span class="json-key">"ProvinceId"</span>: <span class="json-number">19</span>,
+    <span class="json-key">"PM2_5"</span>: <span class="json-string">"12"</span>,
+    <span class="json-key">"PM10"</span>: <span class="json-string">"28"</span>,
+    <span class="json-key">"SO2"</span>: <span class="json-string">"5"</span>,
+    <span class="json-key">"NO2"</span>: <span class="json-string">"14"</span>,
+    <span class="json-key">"CO"</span>: <span class="json-string">"0.5"</span>,
+    <span class="json-key">"O3"</span>: <span class="json-string">"76"</span>,
+    <span class="json-key">"O3_8h"</span>: <span class="json-string">"82"</span>
+  }
+]</code></pre></div>
+                <h2>字段说明</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="字段名"><code>TimePoint</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">监测时次（北京时间，YYYY-MM-DDTHH:mm:ss）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>AQI</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">城市空气质量指数；取该市各站中 AQI 最大者</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>COLevel</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">一氧化碳分指数等级</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>NO2Level</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">二氧化氮分指数等级</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>O3Level</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">臭氧分指数等级</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>PM10Level</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">PM10 分指数等级</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>PM2_5Level</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">PM2.5 分指数等级</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>SO2Level</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">二氧化硫分指数等级</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>Area</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">城市名称</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>CityCode</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">城市行政区划代码</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>AqiLevel</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">AQI 等级 1–6（优至严重污染）；由 AQI 换算</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>PrimaryPollutant</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">首要污染物；无则省略</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>Quality</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">空气质量类别文案</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>Measure</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">建议采取的措施</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>Unheathful</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">对健康影响情况</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>Latitude</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">城市纬度</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>Longitude</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">城市经度</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>ProvinceId</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">省份标识</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>PM2_5</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">PM2.5 小时浓度 μg/m³</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>PM2_5_24h</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">PM2.5 24 小时滑动平均</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>PM10</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">PM10 小时浓度 μg/m³</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>PM10_24h</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">PM10 24 小时滑动平均</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>SO2</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">二氧化硫小时浓度 μg/m³</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>SO2_24h</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">二氧化硫 24 小时滑动平均</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>NO2</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">二氧化氮小时浓度 μg/m³</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>NO2_24h</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">二氧化氮 24 小时滑动平均</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>CO</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">一氧化碳小时浓度 mg/m³</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>CO_24h</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">一氧化碳 24 小时滑动平均</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>O3</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">臭氧 1 小时浓度 μg/m³</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>O3_24h</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">臭氧相关 24 小时统计</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>O3_8h</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">臭氧 8 小时滑动平均 μg/m³</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>O3_8h_24h</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">臭氧 8 小时滑动平均的日统计</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>注意事项</h2>
+                <ul>
+                    <li>GET；无需令牌。</li>
+                    <li>同一 IP 至少间隔 1 秒。</li>
+                    <li>缺测或 NA 的浓度字段省略，不补 0 或空串。</li>
+                </ul>
+            </article>
+            <article class="panel doc-sec" id="get-radar-taiwan" data-title="台湾省雷达矢量图">
+                <h1>台湾省雷达矢量图</h1>
+                <div class="info-box">
+                    <p><strong>请求地址：</strong><span class="address">/get/radar-taiwan.json</span></p>
+                    <p><strong>说明：</strong>获取台湾省最新雷达矢量图</p>
+                </div>
+
+                <h2>示例数据</h2>
+                <div class="code-block"><pre><code>{
+  <span class="json-key">"status"</span>: <span class="json-string">"success"</span>,
+  <span class="json-key">"time"</span>: <span class="json-string">"2026-09-25 14:30:00"</span>,
+  <span class="json-key">"bounds"</span>: {
+    <span class="json-key">"sw"</span>: [<span class="json-number">17.75</span>, <span class="json-number">115</span>],
+    <span class="json-key">"ne"</span>: [<span class="json-number">29.25</span>, <span class="json-number">126.5</span>]
+  },
+  <span class="json-key">"size"</span>: {
+    <span class="json-key">"width"</span>: <span class="json-number">3600</span>,
+    <span class="json-key">"height"</span>: <span class="json-number">3600</span>
+  },
+  <span class="json-key">"image"</span>: <span class="json-string">"data:image/png;base64,..."</span>
+}</code></pre></div>
+                <h2>字段说明</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="字段名"><code>status</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">成功时为 success</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>time</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">观测时刻</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>bounds</code></td>
+                                <td data-label="类型">object</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">图像覆盖范围的地理边界</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>bounds.sw</code></td>
+                                <td data-label="类型">array</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">西南角 [纬度, 经度]</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>bounds.ne</code></td>
+                                <td data-label="类型">array</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">东北角 [纬度, 经度]</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>size</code></td>
+                                <td data-label="类型">object</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">图像像素尺寸</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>size.width</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">宽度（像素）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>size.height</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">高度（像素）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>image</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">data URI（透明背景 PNG Base64）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>注意事项</h2>
+                <ul>
+                    <li>GET；无需令牌。</li>
+                    <li>同一 IP 至少间隔 1 秒；超限返回 429。</li>
+                </ul>
+            </article>
+            <article class="panel doc-sec" id="get-radar-japan" data-title="日本雷达矢量图">
+                <h1>日本雷达矢量图</h1>
+                <div class="info-box">
+                    <p><strong>请求地址：</strong><span class="address">/get/radar-japan.json</span></p>
+                    <p><strong>说明：</strong>获取日本附近最新雷达矢量图</p>
+                </div>
+
+                <h2>示例数据</h2>
+                <div class="code-block"><pre><code>{
+  <span class="json-key">"status"</span>: <span class="json-string">"success"</span>,
+  <span class="json-key">"time"</span>: <span class="json-string">"2026-09-23 21:10:00"</span>,
+  <span class="json-key">"bounds"</span>: {
+    <span class="json-key">"sw"</span>: [<span class="json-number">16.64</span>, <span class="json-number">118.125</span>],
+    <span class="json-key">"ne"</span>: [<span class="json-number">48.92</span>, <span class="json-number">151.875</span>]
+  },
+  <span class="json-key">"size"</span>: {
+    <span class="json-key">"width"</span>: <span class="json-number">1536</span>,
+    <span class="json-key">"height"</span>: <span class="json-number">1792</span>
+  },
+  <span class="json-key">"image"</span>: <span class="json-string">"data:image/png;base64,..."</span>
+}</code></pre></div>
+                <h2>字段说明</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="字段名"><code>status</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">成功时为 success</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>time</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">有效时刻转北京时间（YYYY-MM-DD HH:mm:ss）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>bounds</code></td>
+                                <td data-label="类型">object</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">图像覆盖范围的地理边界</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>bounds.sw</code></td>
+                                <td data-label="类型">array</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">西南角 [纬度, 经度]</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>bounds.ne</code></td>
+                                <td data-label="类型">array</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">东北角 [纬度, 经度]</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>size</code></td>
+                                <td data-label="类型">object</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">图像像素尺寸</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>size.width</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">宽度（像素）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>size.height</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">高度（像素）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>image</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">data URI（透明背景 PNG Base64）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>注意事项</h2>
+                <ul>
+                    <li>GET；无需令牌。</li>
+                    <li>同一 IP 至少间隔 1 秒；超限返回 429。</li>
+                </ul>
+            </article>
+            <article class="panel doc-sec" id="get-typhoon-global" data-title="全球热带气旋 GET API 字段说明文档">
+                <h1>全球热带气旋 GET API 字段说明文档</h1>
+                <div class="info-box">
+                    <p><strong>请求地址：</strong><span class="address">/get/typhoon-global.php</span></p>
+                    <p><strong>说明：</strong>获取当前全球活跃热带气旋（不含西北太平洋 / 国内台风；国内请用 /get/typhoon.php）</p>
+                </div>
+
+                <h2>示例数据</h2>
+                <div class="code-block"><pre><code>[
+  {
+    <span class="json-key">"id"</span>: <span class="json-string">"nhc-al062026"</span>,
+    <span class="json-key">"name"</span>: <span class="json-string">"Fay"</span>,
+    <span class="json-key">"name_en"</span>: <span class="json-string">"AL062026"</span>,
+    <span class="json-key">"basin"</span>: <span class="json-string">"AL"</span>,
+    <span class="json-key">"source"</span>: <span class="json-string">"NHC/CPHC"</span>,
+    <span class="json-key">"latitude"</span>: <span class="json-number">29.8</span>,
+    <span class="json-key">"longitude"</span>: <span class="json-number">-40.5</span>,
+    <span class="json-key">"moveDirection"</span>: <span class="json-string">"西"</span>,
+    <span class="json-key">"moveSpeed"</span>: <span class="json-number">13</span>,
+    <span class="json-key">"power"</span>: <span class="json-number">8</span>,
+    <span class="json-key">"pressure"</span>: <span class="json-number">1010</span>,
+    <span class="json-key">"windSpeed"</span>: <span class="json-number">18</span>,
+    <span class="json-key">"type"</span>: <span class="json-string">"热带风暴"</span>,
+    <span class="json-key">"updateTime"</span>: <span class="json-string">"2026-09-24 17:00:00"</span>,
+    <span class="json-key">"points"</span>: []
+  }
+]</code></pre></div>
+                <h2>字段说明</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="字段名"><code>id</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">风暴编号（如 nhc-al062026 / al062026 / jtwc-io012026）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>name</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">名称</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>name_en</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">英文名或 ATCF 码</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>basin</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">洋区：AL / EP / CP / IO / SI / SP / SH 等（不含 WP）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>source</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">机构来源，如 NHC/CPHC、JTWC</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>latitude</code></td>
+                                <td data-label="类型">number</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">中心纬度</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>longitude</code></td>
+                                <td data-label="类型">number</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">中心经度</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>moveDirection</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">移向</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>moveSpeed</code></td>
+                                <td data-label="类型">number</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">移速 km/h</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>power</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">中心附近最大风力等级（有则给出）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>pressure</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">中心气压 hPa</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>windSpeed</code></td>
+                                <td data-label="类型">number</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">中心附近最大风速 m/s</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>type</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">强度等级文案</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>radius7</code></td>
+                                <td data-label="类型">number|string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">七级风圈；四象限时为原样字符串</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>radius10</code></td>
+                                <td data-label="类型">number|string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">十级风圈；规则同 radius7</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>updateTime</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">最新实况点时间（北京时间）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>points</code></td>
+                                <td data-label="类型">array</td>
+                                <td data-label="必填">否</td>
+                                <td data-label="说明">完整实况路径点（有则保留；NHC 直拉补源可能无此字段）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>注意事项</h2>
+                <ul>
+                    <li>响应为 JSON 数组；无活跃风暴时为 []。</li>
+                    <li>不含西北太平洋与国内台风；国内/西太请用 /get/typhoon.php。</li>
+                    <li>GET；无需令牌；同一 IP 至少间隔 1 秒。</li>
+                </ul>
+            </article>
+            <article class="panel doc-sec" id="get-wind" data-title="全球实时风场 GET API 字段说明文档">
+                <h1>全球实时风场 GET API 字段说明文档</h1>
+                <div class="info-box">
+                    <p><strong>请求地址：</strong><span class="address">/get/wind.php</span></p>
+                    <p><strong>说明：</strong>获取全球近地面风场</p>
+                </div>
+
+                <h2>示例数据</h2>
+                <div class="code-block"><pre><code>{
+  <span class="json-key">"status"</span>: <span class="json-string">"success"</span>,
+  <span class="json-key">"time"</span>: <span class="json-string">"2026-09-22 15:00:00"</span>,
+  <span class="json-key">"source"</span>: <span class="json-string">"gfs"</span>,
+  <span class="json-key">"resolution_deg"</span>: <span class="json-number">1</span>,
+  <span class="json-key">"level"</span>: <span class="json-string">"10m"</span>,
+  <span class="json-key">"nx"</span>: <span class="json-number">360</span>,
+  <span class="json-key">"ny"</span>: <span class="json-number">181</span>,
+  <span class="json-key">"data"</span>: [
+    {
+      <span class="json-key">"header"</span>: {
+        <span class="json-key">"parameterNumber"</span>: <span class="json-number">2</span>,
+        <span class="json-key">"parameterNumberName"</span>: <span class="json-string">"U-component_of_wind"</span>,
+        <span class="json-key">"nx"</span>: <span class="json-number">360</span>,
+        <span class="json-key">"ny"</span>: <span class="json-number">181</span>,
+        <span class="json-key">"lo1"</span>: <span class="json-number">0</span>,
+        <span class="json-key">"la1"</span>: <span class="json-number">90</span>,
+        <span class="json-key">"dx"</span>: <span class="json-number">1</span>,
+        <span class="json-key">"dy"</span>: <span class="json-number">1</span>
+      },
+      <span class="json-key">"data"</span>: [<span class="json-number">-2.15</span>, <span class="json-number">0.3</span>, <span class="json-string">"…"</span>]
+    },
+    {
+      <span class="json-key">"header"</span>: {
+        <span class="json-key">"parameterNumber"</span>: <span class="json-number">3</span>,
+        <span class="json-key">"parameterNumberName"</span>: <span class="json-string">"V-component_of_wind"</span>
+      },
+      <span class="json-key">"data"</span>: [<span class="json-number">1.2</span>, <span class="json-number">-0.5</span>, <span class="json-string">"…"</span>]
+    }
+  ]
+}</code></pre></div>
+                <h2>字段说明</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="字段名"><code>status</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">成功时为 success</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>time</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">风场有效时刻（北京时间）</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>source</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">固定为 gfs</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>resolution_deg</code></td>
+                                <td data-label="类型">number</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">水平分辨率（度），当前为 1</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>level</code></td>
+                                <td data-label="类型">string</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">高度层，如 10m</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>nx</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">经向格点数</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>ny</code></td>
+                                <td data-label="类型">integer</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">纬向格点数</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>data</code></td>
+                                <td data-label="类型">array</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">长度 2：依次为 U、V 分量，形态兼容 leaflet-velocity / grib2json</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>data[].header</code></td>
+                                <td data-label="类型">object</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">格点头：nx/ny/lo1/la1/lo2/la2/dx/dy 等</td>
+                            </tr>
+                            <tr>
+                                <td data-label="字段名"><code>data[].data</code></td>
+                                <td data-label="类型">array</td>
+                                <td data-label="必填">是</td>
+                                <td data-label="说明">按行主序展平的风速分量 m/s；缺测为 null</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>注意事项</h2>
+                <ul>
+                    <li>GET；无需令牌。</li>
+                    <li>同一 IP 至少间隔 1 秒；超限返回 429。</li>
+                    <li>格点自北向南、自西向东（la1=90 → la2=-90，lo1=0 → lo2=359）。</li>
+                    <li>体积较大，请本地缓存，勿高频轮询。</li>
+                    <li>data 数组可直接交给 leaflet-velocity 等粒子风场组件。</li>
+                </ul>
+            </article>
+            </main>
+    </div>
+    </div>
+
+    <div class="api-announce-overlay" id="apiAnnounce" hidden>
+        <div class="api-announce-modal" role="dialog" aria-modal="true" aria-labelledby="apiAnnounceTitle">
+            <div class="api-announce-head">
+                <span class="api-announce-icon" aria-hidden="true"><i class="fas fa-triangle-exclamation"></i></span>
+                <div>
+                    <h2 class="api-announce-title" id="apiAnnounceTitle">使用须知</h2>
+                    <p class="api-announce-sub">Jian Project · API</p>
+                </div>
+            </div>
+            <div class="api-announce-body">
+                <p class="api-announce-lead">本站服务属于公益性质，仅限学习与对接调试。本平台不就服务可用性、运行连续性、响应及时性、数据准确性作出任何明示或默示保证。服务可随时终止，终止前无需另行告知。您继续使用即表示已知悉并自愿承担相关风险。</p>
+                <ul class="api-announce-list">
+                    <li>使用过程中遵守适用法律法规与公序良俗</li>
+                    <li>不得利用本站数据从事违法、侵权或干扰服务的行为</li>
+                    <li>继续浏览即表示你已阅读并接受服务条款与隐私政策</li>
+                    <li>欢迎加入 QQ 群「Whews / JianProject API服务」沟通对接事宜。</li>
+                </ul>
+            </div>
+            <div class="api-announce-links">
+                <a href="https://qm.qq.com/q/TNfsVfr6Mi" target="_blank" rel="noopener"><i class="fab fa-qq"></i> 加入群聊</a>
+                <a href="/terms/" target="_blank" rel="noopener"><i class="fas fa-file-contract"></i> 服务条款</a>
+                <a href="/privacy/" target="_blank" rel="noopener"><i class="fas fa-user-shield"></i> 隐私政策</a>
+            </div>
+            <div class="api-announce-actions">
+                <button type="button" class="api-announce-btn" id="apiAnnounceAgree">同意并继续查阅</button>
+            </div>
+        </div>
+    </div>
+<script>
+(function () {
+    var overlay = document.getElementById('apiAnnounce');
+    var agreeBtn = document.getElementById('apiAnnounceAgree');
+    if (!overlay || !agreeBtn) return;
+    var KEY = "apiGuideAnnounceOk_v20261002qq";
+    try {
+        if (sessionStorage.getItem(KEY) === '1') return;
+    } catch (_) {}
+
+    function hide() {
+        try { sessionStorage.setItem(KEY, '1'); } catch (_) {}
+        overlay.classList.add('is-hiding');
+        document.body.classList.remove('body--api-announce-open');
+        setTimeout(function () {
+            overlay.hidden = true;
+            overlay.classList.remove('is-hiding', 'is-visible');
+        }, 220);
+    }
+
+    overlay.hidden = false;
+    overlay.classList.add('is-visible');
+    document.body.classList.add('body--api-announce-open');
+    agreeBtn.addEventListener('click', hide);
+})();
+</script>
+    <script>
+        (function () {
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            const navLinks = document.querySelector('.nav-links');
+            if (!mobileMenuBtn || !navLinks) return;
+
+            mobileMenuBtn.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                mobileMenuBtn.querySelector('i').classList.toggle('fa-bars');
+                mobileMenuBtn.querySelector('i').classList.toggle('fa-times');
+            });
+
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                    mobileMenuBtn.querySelector('i').classList.add('fa-bars');
+                    mobileMenuBtn.querySelector('i').classList.remove('fa-times');
+                });
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 1024) {
+                    navLinks.classList.remove('active');
+                    const icon = mobileMenuBtn.querySelector('i');
+                    if (icon) {
+                        icon.classList.add('fa-bars');
+                        icon.classList.remove('fa-times');
+                    }
+                }
+            });
+        })();
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                // API 文档侧栏用 hash 切节，不走整页锚点平滑滚动
+                if (this.closest('#apiSidebar, .page-main--docs')) return;
+                const targetId = this.getAttribute('href');
+                if (!targetId || targetId === '#') return;
+                const targetElement = document.querySelector(targetId);
+                if (!targetElement) return;
+                e.preventDefault();
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+    <script src="/api-docs-nav.js?v=20260922tilemap1"></script>
+</body>
+</html>

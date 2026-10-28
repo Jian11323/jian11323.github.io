@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>地震情报实况栏 Rolling-Subtitle · 项目介绍</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdn.jsdmirror.com/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css'">
+    <link href="https://fonts.googleapis.cn/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Sora:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" onerror="this.onerror=null;this.href=this.href.replace('://fonts.googleapis.cn/','://fonts.font.im/')">
+    <style>:root {
+  --primary-color: #1a9b8e;
+  --secondary-color: #5ec4b8;
+  --accent-color: #c4a574;
+  --light-color: #f7fafb;
+  --dark-color: #1a2332;
+  --gray-color: #4a5568;
+  --success-color: #00b894;
+  --warning-color: #fdcb6e;
+  --info-color: #0984e3;
+  --page-bg: #eef3f4;
+  --card-bg: #ffffff;
+  --border-radius-lg: 18px;
+  --border-radius-md: 12px;
+  --border-radius-sm: 8px;
+  --shadow-soft: 0 14px 30px rgba(15, 23, 42, 0.08);
+  --shadow-subtle: 0 6px 18px rgba(15, 23, 42, 0.04);
+  --transition: all 0.3s linear;
+  --site-header-h: 80px;
+  --site-shell-max: 1280px;
+  --site-shell-pad: 20px;
+  /* 正文底部 → 底栏：全站唯一间距来源，避免各页再叠 padding */
+  --site-end-gap: 48px;
+  /* 全站入场：线性、等距错开 */
+  --jp-enter-ease: linear;
+  --jp-enter-dur: 0.52s;
+  --jp-enter-dist: 14px;
+  --jp-enter-stagger: 0.08s;
+}
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
+  height: 100%;
+}
+body {
+  margin: 0;
+  min-height: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Noto Sans SC', Sora, sans-serif;
+  line-height: 1.6;
+  color: var(--dark-color);
+  background: transparent;
+  overflow-x: hidden;
+  max-width: 100%;
+  position: relative;
+  z-index: 1;
+}
+img, svg, video, iframe {
+  max-width: 100%;
+  height: auto;
+}
+/* 主内容区占满剩余高度；须高于 atmosphere(fixed z-index:0) */
+main,
+.page-stack,
+.page-main {
+  flex: 1 0 auto;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+.page-stack,
+.page-main:not(.page-main--docs) {
+  animation: jp-enter-fade calc(var(--jp-enter-dur) + 0.04s) var(--jp-enter-ease) var(--jp-enter-stagger) both;
+}
+.page-stack {
+  flex: 1 0 auto;
+}
+/* API 文档：禁止父级 transform，避免弄坏 fixed 侧栏 */
+.page-main--docs {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+.page-main--docs .layout,
+.page-main--docs .main {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+/* 其它页内层 main 不叠入场 */
+.page-main > main,
+.page-main main.main {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+.site-shell,
+.container {
+  width: 100%;
+  max-width: var(--site-shell-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: max(var(--site-shell-pad), env(safe-area-inset-left));
+  padding-right: max(var(--site-shell-pad), env(safe-area-inset-right));
+}
+header.site-header {
+  background-color: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  padding-top: env(safe-area-inset-top);
+  /* 顶栏自身 fixed，且内含移动端 fixed 菜单，禁用 transform */
+  animation: jp-enter-fade var(--jp-enter-dur) var(--jp-enter-ease) both;
+}
+.site-inner {
+  width: 100%;
+  max-width: var(--site-shell-max);
+  margin: 0 auto;
+  padding-left: max(var(--site-shell-pad), env(safe-area-inset-left));
+  padding-right: max(var(--site-shell-pad), env(safe-area-inset-right));
+}
+.site-header .site-inner {
+  max-width: var(--site-shell-max);
+}
+nav.site-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+}
+.site-header .logo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.03em;
+  font-family: Sora, 'Noto Sans SC', sans-serif;
+}
+.site-header .logo i {
+  margin-right: 10px;
+  font-size: 2rem;
+}
+.site-header .logo .logo-mark,
+footer.site-footer .footer-logo .logo-mark {
+  width: 36px;
+  height: 36px;
+  margin-right: 10px;
+  flex-shrink: 0;
+  display: block;
+  overflow: visible;
+}
+.site-header .logo i { display: none; }
+footer.site-footer .footer-logo i { display: none; }
+
+.site-header .nav-links {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.site-header .nav-links li {
+  margin-left: 2rem;
+  display: flex;
+  align-items: center;
+}
+.site-header .nav-links a {
+  text-decoration: none;
+  color: var(--gray-color);
+  font-weight: 500;
+  transition: var(--transition);
+  position: relative;
+  padding: 5px 0;
+}
+.site-header .nav-links a:hover,
+.site-header .nav-links a.active {
+  color: var(--primary-color);
+}
+.site-header .nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--primary-color);
+  transition: var(--transition);
+}
+.site-header .nav-links a:hover::after,
+.site-header .nav-links a.active::after {
+  width: 100%;
+}
+.site-header .nav-links a.nav-legal {
+  color: var(--primary-color);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.site-header .nav-links a.nav-legal i {
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+.site-header .mobile-menu-btn {
+  display: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--dark-color);
+  border: none;
+  background: transparent;
+  padding: 6px 8px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.page-main {
+  padding-top: 110px;
+  padding-bottom: 40px;
+}
+.hero-legal {
+  margin-top: 1.25rem;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: center;
+}
+.hero-legal a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.92);
+  color: #1a9b8e;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(26, 155, 142, 0.2);
+}
+.hero-legal a:hover { background: #fff; color: #147f74; }
+
+footer.site-footer {
+  background: transparent;
+  color: var(--gray-color);
+  padding: 28px 0 22px;
+  text-align: center;
+  margin: var(--site-end-gap) 0 0;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  display: block;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid rgba(26, 35, 50, 0.08);
+  animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) calc(var(--jp-enter-stagger) * 2) both;
+}
+footer.site-footer .site-inner {
+  width: 100%;
+  max-width: var(--site-shell-max);
+  margin-left: auto;
+  margin-right: auto;
+  background: transparent;
+}
+footer.site-footer a {
+  color: var(--gray-color);
+  text-decoration: none;
+}
+footer.site-footer .footer-content {
+  margin-bottom: 8px;
+}
+footer.site-footer .footer-logo {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--dark-color);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-family: Sora, 'Noto Sans SC', sans-serif;
+}
+footer.site-footer .footer-logo i {
+  font-size: 1.7rem;
+  color: var(--primary-color);
+}
+footer.site-footer .footer-content p {
+  color: var(--gray-color);
+  font-size: 0.95rem;
+  margin: 0;
+}
+footer.site-footer .copyright,
+footer.site-footer .copyright p {
+  color: var(--gray-color);
+  font-size: 0.9rem;
+  margin: 0 0 6px;
+}
+footer.site-footer .beian {
+  color: var(--gray-color);
+  font-size: 0.85rem;
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 8px;
+}
+footer.site-footer .beian a {
+  color: var(--gray-color);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+footer.site-footer .beian a:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+footer.site-footer .beian img {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+@media (max-width: 1024px) {
+  :root { --site-header-h: 68px; }
+  .site-header .logo { font-size: 1.35rem; }
+  .site-header .logo i { font-size: 1.55rem; margin-right: 8px; }
+  nav.site-nav { padding: 14px 0; }
+  .page-main { padding-top: 96px; }
+  .site-header .mobile-menu-btn { display: block; }
+  .site-header .nav-links {
+    position: fixed;
+    top: calc(var(--site-header-h) + env(safe-area-inset-top));
+    left: -100%;
+    width: 100%;
+    height: calc(100dvh - var(--site-header-h) - env(safe-area-inset-top));
+    background-color: #fff;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 12px 20px 32px;
+    overflow-y: auto;
+    transition: left 0.28s ease;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+  }
+  .site-header .nav-links.active { left: 0; }
+  .site-header .nav-links li {
+    margin: 0;
+    width: 100%;
+  }
+  .site-header .nav-links a {
+    display: flex;
+    width: 100%;
+    padding: 14px 4px;
+    font-size: 1.02rem;
+  }
+  .site-header .nav-links a::after { display: none; }
+  .site-header .nav-dropdown-menu {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    box-shadow: none;
+    margin: 0 0 8px 12px;
+  }
+}
+@media (max-width: 640px) {
+  :root {
+    --site-shell-pad: 14px;
+    --site-end-gap: 32px;
+  }
+  .site-header .logo { font-size: 1.2rem; }
+  .page-main { padding-top: 88px; padding-bottom: 28px; }
+  footer.site-footer { padding: 28px 0 20px; }
+  footer.site-footer .footer-logo { font-size: 1.45rem; }
+}
+
+/* —— 全站线性入场 —— */
+@keyframes jp-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--jp-enter-dist), 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes jp-enter-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.jp-enter {
+  animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) both;
+}
+.jp-enter-seq > * {
+  opacity: 0;
+  animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) both;
+}
+.jp-enter-seq > *:nth-child(1) { animation-delay: 0s; }
+.jp-enter-seq > *:nth-child(2) { animation-delay: calc(var(--jp-enter-stagger) * 1); }
+.jp-enter-seq > *:nth-child(3) { animation-delay: calc(var(--jp-enter-stagger) * 2); }
+.jp-enter-seq > *:nth-child(4) { animation-delay: calc(var(--jp-enter-stagger) * 3); }
+.jp-enter-seq > *:nth-child(5) { animation-delay: calc(var(--jp-enter-stagger) * 4); }
+.jp-enter-seq > *:nth-child(6) { animation-delay: calc(var(--jp-enter-stagger) * 5); }
+.jp-enter-seq > *:nth-child(7) { animation-delay: calc(var(--jp-enter-stagger) * 6); }
+.jp-enter-seq > *:nth-child(8) { animation-delay: calc(var(--jp-enter-stagger) * 7); }
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  main,
+  .page-stack,
+  .page-main,
+  .page-main--docs,
+  footer.site-footer,
+  .jp-enter,
+  .jp-enter-seq > * {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}.atmosphere {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 42%, #f4faf9 0%, #e8f0f1 55%, #dde7e9 100%);
+}
+.atmosphere .orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(48px);
+  will-change: transform, opacity;
+}
+.atmosphere .orb-a {
+  width: min(58vw, 480px);
+  height: min(58vw, 480px);
+  left: -8%;
+  top: -12%;
+  background: rgba(26, 155, 142, 0.28);
+  animation: jp-orb-a 18s ease-in-out infinite;
+}
+.atmosphere .orb-b {
+  width: min(48vw, 420px);
+  height: min(48vw, 420px);
+  right: -10%;
+  bottom: -8%;
+  background: rgba(196, 165, 116, 0.26);
+  animation: jp-orb-b 22s ease-in-out infinite;
+}
+.atmosphere .orb-c {
+  width: min(36vw, 300px);
+  height: min(36vw, 300px);
+  left: 42%;
+  top: 58%;
+  background: rgba(94, 196, 184, 0.18);
+  animation: jp-orb-c 16s ease-in-out infinite;
+}
+.atmosphere .ripple-field {
+  position: absolute;
+  left: 58%;
+  top: 40%;
+  width: 0;
+  height: 0;
+}
+.atmosphere .ripple {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: min(78vw, 620px);
+  height: min(78vw, 620px);
+  margin-left: calc(min(78vw, 620px) / -2);
+  margin-top: calc(min(78vw, 620px) / -2);
+  border: 1.5px solid rgba(26, 155, 142, 0.35);
+  border-radius: 50%;
+  opacity: 0;
+  animation: jp-ripple 6.5s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+.atmosphere .ripple:nth-child(2) {
+  border-color: rgba(26, 155, 142, 0.28);
+  animation-delay: 2.1s;
+}
+.atmosphere .ripple:nth-child(3) {
+  border-color: rgba(196, 165, 116, 0.32);
+  animation-delay: 4.2s;
+}
+.atmosphere .wave-canvas {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 8%;
+  height: 140px;
+  opacity: 0.5;
+}
+.atmosphere .wave-canvas svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.atmosphere .wave-canvas path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.atmosphere .wave-a {
+  stroke: rgba(26, 155, 142, 0.55);
+  stroke-width: 1.8;
+  animation: jp-wave 12s linear infinite;
+}
+.atmosphere .wave-b {
+  stroke: rgba(196, 165, 116, 0.45);
+  stroke-width: 1.4;
+  animation: jp-wave 18s linear infinite reverse;
+}
+.atmosphere .wave-c {
+  stroke: rgba(26, 155, 142, 0.28);
+  stroke-width: 1.2;
+  animation: jp-wave 9s linear infinite;
+}
+.atmosphere .grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: jp-grain 8s steps(6) infinite;
+}
+@keyframes jp-orb-a {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+  40% { transform: translate(12%, 18%) scale(1.12); opacity: 1; }
+  70% { transform: translate(4%, 28%) scale(0.94); opacity: 0.75; }
+}
+@keyframes jp-orb-b {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.65; }
+  35% { transform: translate(-16%, -12%) scale(1.1); opacity: 0.95; }
+  65% { transform: translate(-6%, -22%) scale(0.92); opacity: 0.7; }
+}
+@keyframes jp-orb-c {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+  50% { transform: translate(-30%, -70%) scale(1.2); opacity: 0.85; }
+}
+@keyframes jp-ripple {
+  0% { transform: scale(0.18); opacity: 0.55; }
+  70% { opacity: 0.18; }
+  100% { transform: scale(1); opacity: 0; }
+}
+@keyframes jp-wave {
+  from { transform: translateX(0); }
+  to { transform: translateX(-8.33%); }
+}
+@keyframes jp-grain {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-1%, 1%); }
+  50% { transform: translate(1%, -1%); }
+  75% { transform: translate(-1%, -1%); }
+}
+@media (max-width: 760px) {
+  .atmosphere .ripple-field { left: 50%; top: 28%; }
+  .atmosphere .wave-canvas { bottom: 4%; height: 100px; opacity: 0.38; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atmosphere .orb,
+  .atmosphere .ripple,
+  .atmosphere .wave-a,
+  .atmosphere .wave-b,
+  .atmosphere .wave-c,
+  .atmosphere .grain {
+    animation: none !important;
+  }
+  .atmosphere .orb { opacity: 0.55; }
+  .atmosphere .ripple { opacity: 0.15; transform: scale(0.7); }
+}</style>
+<style>
+        :root {
+            --rs-ink: #0f172a;
+            --rs-muted: #64748b;
+            --rs-line: rgba(15, 23, 42, 0.08);
+            --rs-surface: rgba(255, 255, 255, 0.82);
+            --rs-glow: rgba(26, 155, 142, 0.22);
+            --rs-demo-top: #0b1220;
+            --rs-demo-mid: #1a2744;
+            --rs-demo-bot: #121826;
+        }
+
+        .rs-main {
+            padding-top: calc(var(--site-header-h, 80px) + 28px);
+            /* 到底间距只走 chrome 的 --site-end-gap，避免与 footer margin 叠双倍 */
+            padding-bottom: 0;
+            background:
+                radial-gradient(920px 420px at 12% -8%, rgba(26, 155, 142, 0.14), transparent 58%),
+                radial-gradient(760px 380px at 92% 8%, rgba(255, 122, 162, 0.08), transparent 55%);
+            background-repeat: no-repeat;
+        }
+
+        .rs-shell {
+            width: 100%;
+            max-width: var(--site-shell-max, 1280px);
+            margin: 0 auto;
+            padding-left: max(var(--site-shell-pad, 20px), env(safe-area-inset-left));
+            padding-right: max(var(--site-shell-pad, 20px), env(safe-area-inset-right));
+        }
+
+        /* —— Hero —— */
+        .rs-hero {
+            position: relative;
+            margin-bottom: 2.4rem;
+            padding: 1.1rem 0 0.4rem;
+            animation: rsRise 0.52s linear both;
+        }
+
+        .rs-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            margin-bottom: 1.15rem;
+            font-family: 'Sora', 'Noto Sans SC', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--primary-color);
+        }
+
+        .rs-brand-mark {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            box-shadow: 0 0 0 6px rgba(26, 155, 142, 0.14);
+            animation: rsPulse 2.4s ease-in-out infinite;
+        }
+
+        .rs-hero h1 {
+            font-family: 'Sora', 'Noto Sans SC', sans-serif;
+            font-size: clamp(2.15rem, 4.6vw, 3.35rem);
+            font-weight: 700;
+            line-height: 1.12;
+            letter-spacing: -0.02em;
+            color: var(--rs-ink);
+            margin: 0 0 0.55rem;
+        }
+
+        .rs-hero .rs-en {
+            font-family: 'Sora', sans-serif;
+            font-size: clamp(1.05rem, 2vw, 1.35rem);
+            font-weight: 600;
+            color: var(--primary-color);
+            margin: 0 0 1rem;
+            letter-spacing: 0.04em;
+        }
+
+        .rs-hero-lead {
+            max-width: 38rem;
+            font-size: 1.06rem;
+            line-height: 1.75;
+            color: var(--rs-muted);
+            margin: 0 0 1.55rem;
+        }
+
+        .rs-cta-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem 1rem;
+            margin-bottom: 1.85rem;
+        }
+
+        .rs-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.72rem 1.25rem;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .rs-btn-primary {
+            color: #fff;
+            background: linear-gradient(135deg, #1a9b8e, #7b86d6);
+            box-shadow: 0 12px 28px rgba(26, 155, 142, 0.32);
+        }
+
+        .rs-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 34px rgba(26, 155, 142, 0.42);
+        }
+
+        .rs-btn-gitee {
+            color: #fff;
+            background: linear-gradient(135deg, #c71d23, #e04a4f);
+            box-shadow: 0 12px 28px rgba(199, 29, 35, 0.28);
+        }
+
+        .rs-btn-gitee:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 34px rgba(199, 29, 35, 0.4);
+        }
+
+        .rs-btn-success {
+            color: #fff;
+            background: linear-gradient(135deg, #00a884, #00b894);
+            box-shadow: 0 12px 28px rgba(0, 184, 148, 0.28);
+        }
+
+        .rs-btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 34px rgba(0, 184, 148, 0.38);
+        }
+
+        .rs-repo-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .rs-repo {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 0.82rem;
+            color: var(--rs-muted);
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--rs-line);
+            border-radius: 999px;
+            padding: 0.45rem 0.9rem;
+            word-break: break-all;
+        }
+
+        .rs-version {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin: 0 0 0.9rem;
+            padding: 0.4rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: #4338ca;
+            background: rgba(26, 155, 142, 0.12);
+            border: 1px solid rgba(26, 155, 142, 0.2);
+        }
+
+        .rs-note {
+            margin: 0 0 1.1rem;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            font-size: 0.92rem;
+            line-height: 1.7;
+            color: #92400e;
+            background: rgba(253, 203, 110, 0.28);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+
+        .rs-list {
+            margin: 0;
+            padding-left: 1.2rem;
+            color: var(--rs-muted);
+        }
+
+        .rs-list li {
+            margin-bottom: 0.55rem;
+            line-height: 1.7;
+        }
+
+        .rs-list strong {
+            color: var(--rs-ink);
+            font-weight: 600;
+        }
+
+        .rs-two-col {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem 1.4rem;
+        }
+
+        .rs-mode {
+            padding-top: 0.35rem;
+            border-top: 2px solid rgba(26, 155, 142, 0.28);
+        }
+
+        .rs-mode h3 {
+            font-family: 'Sora', 'Noto Sans SC', sans-serif;
+            font-size: 1rem;
+            color: var(--rs-ink);
+            margin: 0.55rem 0 0.35rem;
+        }
+
+        .rs-mode p {
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        /* —— 实况栏演示（全宽视觉锚点） —— */
+        .rs-demo-block {
+            position: relative;
+            margin: 0 -0.35rem 0.35rem;
+            animation: rsRise 0.52s 0.08s linear both;
+        }
+
+        .rs-demo-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem 1rem;
+            margin-bottom: 0.7rem;
+            padding: 0 0.35rem;
+        }
+
+        .rs-demo-meta .caption {
+            font-size: 0.88rem;
+            color: var(--rs-muted);
+            margin: 0;
+        }
+
+        .rs-live-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: #e2e8f0;
+            background: var(--rs-demo-top);
+            border-radius: 999px;
+            padding: 0.35rem 0.75rem;
+        }
+
+        .rs-live-chip i {
+            color: #34d399;
+            font-size: 0.55rem;
+            animation: rsBlink 1.4s ease-in-out infinite;
+        }
+
+        .subtitle-demo {
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.06), transparent 40%),
+                linear-gradient(135deg, var(--rs-demo-top) 0%, var(--rs-demo-mid) 48%, var(--rs-demo-bot) 100%);
+            box-shadow:
+                0 24px 48px rgba(15, 23, 42, 0.22),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            padding: 1.05rem 0;
+            min-height: 58px;
+        }
+
+        .subtitle-demo::before,
+        .subtitle-demo::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 56px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .subtitle-demo::before {
+            left: 0;
+            background: linear-gradient(90deg, var(--rs-demo-top), transparent);
+        }
+
+        .subtitle-demo::after {
+            right: 0;
+            background: linear-gradient(270deg, var(--rs-demo-bot), transparent);
+        }
+
+        .subtitle-demo-chrome {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0 1.1rem 0.65rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+            margin-bottom: 0.55rem;
+        }
+
+        .subtitle-demo-chrome span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(148, 163, 184, 0.45);
+        }
+
+        .subtitle-demo-chrome span:nth-child(1) { background: #f87171; }
+        .subtitle-demo-chrome span:nth-child(2) { background: #fbbf24; }
+        .subtitle-demo-chrome span:nth-child(3) { background: #34d399; }
+
+        .subtitle-demo-chrome .title {
+            margin-left: 0.55rem;
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: rgba(226, 232, 240, 0.55);
+            width: auto;
+            height: auto;
+            border-radius: 0;
+            background: none;
+        }
+
+        .subtitle-demo-track {
+            display: flex;
+            width: max-content;
+            animation: subtitleMarquee 42s linear infinite;
+        }
+
+        .subtitle-demo-track span {
+            flex-shrink: 0;
+            padding: 0 3rem;
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #e2e8f0;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+
+        .subtitle-demo-track .dot {
+            color: #a5b4fc;
+        }
+
+        @keyframes subtitleMarquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .subtitle-demo-track {
+                animation: none;
+                justify-content: center;
+                flex-wrap: wrap;
+                width: 100%;
+                max-width: 100%;
+            }
+            .subtitle-demo-track span {
+                white-space: normal;
+                padding: 0.5rem 1rem;
+                text-align: center;
+            }
+            .subtitle-demo-track span + span { display: none; }
+            .subtitle-demo::before,
+            .subtitle-demo::after { display: none; }
+            .rs-brand-mark,
+            .rs-live-chip i { animation: none; }
+        }
+
+        /* —— 内容区块 —— */
+        .rs-grid {
+            display: grid;
+            gap: 1.25rem;
+            margin-top: 2rem;
+            animation: rsRise 0.52s 0.16s linear both;
+        }
+
+        .rs-panel {
+            background: var(--rs-surface);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--rs-line);
+            border-radius: 18px;
+            padding: 1.55rem 1.45rem;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .rs-panel h2 {
+            font-family: 'Sora', 'Noto Sans SC', sans-serif;
+            font-size: 1.28rem;
+            color: var(--primary-color);
+            margin: 0 0 1rem;
+            padding-bottom: 0.55rem;
+            border-bottom: 1px solid var(--rs-line);
+        }
+
+        .rs-panel p,
+        .rs-panel li {
+            color: var(--rs-muted);
+            margin-bottom: 0.7rem;
+            line-height: 1.7;
+        }
+
+        .rs-panel > :last-child {
+            margin-bottom: 0;
+        }
+
+        .rs-panel a {
+            color: var(--primary-color);
+        }
+
+        .rs-panel ol {
+            padding-left: 1.25rem;
+            margin: 0 0 0.85rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .feature-mini {
+            padding: 1rem 0.15rem 0.2rem;
+            border-top: 2px solid rgba(26, 155, 142, 0.35);
+            transition: border-color 0.2s ease;
+        }
+
+        .feature-mini:hover {
+            border-top-color: var(--accent-color);
+        }
+
+        .feature-mini h3 {
+            font-family: 'Sora', 'Noto Sans SC', sans-serif;
+            font-size: 1.02rem;
+            color: var(--rs-ink);
+            margin: 0 0 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature-mini h3 i {
+            color: var(--primary-color);
+            font-size: 0.95rem;
+        }
+
+        .feature-mini p {
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .rs-tech-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0.35rem 0 0.9rem;
+        }
+
+        .rs-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            background: rgba(26, 155, 142, 0.1);
+            border: 1px solid rgba(26, 155, 142, 0.16);
+        }
+
+        .code-block {
+            background: #111827;
+            border-radius: 12px;
+            padding: 1.1rem 1.25rem;
+            margin: 0.85rem 0 0;
+            overflow-x: auto;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .code-block pre {
+            white-space: pre-wrap;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 0.86rem;
+            color: #f9fafb;
+            margin: 0;
+        }
+
+        .related-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 0.35rem;
+        }
+
+        .related-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: rgba(248, 249, 251, 0.9);
+            border-radius: 999px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            color: var(--rs-ink);
+            border: 1px solid var(--rs-line);
+            transition: border-color 0.2s, color 0.2s, background 0.2s;
+        }
+
+        .related-links a:hover {
+            background: #fff;
+            border-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+
+        .rs-disclaimer {
+            font-size: 0.92rem;
+        }
+
+        @keyframes rsRise {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes rsPulse {
+            0%, 100% { box-shadow: 0 0 0 6px rgba(26, 155, 142, 0.14); }
+            50% { box-shadow: 0 0 0 10px rgba(26, 155, 142, 0.06); }
+        }
+        @keyframes rsBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+
+        @media (max-width: 768px) {
+            .rs-main { padding-top: calc(var(--site-header-h, 80px) + 18px); padding-bottom: 0; }
+            .rs-shell { padding-left: 14px; padding-right: 14px; }
+            .rs-cta-row { flex-direction: column; align-items: stretch; }
+            .rs-btn { justify-content: center; }
+            .rs-repo { text-align: center; }
+            .feature-grid,
+            .rs-two-col { grid-template-columns: 1fr; }
+            .rs-panel { padding: 1.25rem 1.05rem; }
+            .code-block { padding: 1rem; }
+            .code-block pre { word-break: break-word; overflow-wrap: anywhere; }
+            .subtitle-demo { border-radius: 14px; }
+        }
+    </style></head>
+<body>
+<div class="atmosphere" aria-hidden="true">
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+  <div class="ripple-field">
+    <div class="ripple"></div>
+    <div class="ripple"></div>
+    <div class="ripple"></div>
+  </div>
+  <div class="wave-canvas">
+    <svg viewBox="0 0 1200 140" preserveAspectRatio="none">
+      <path class="wave-c" d="M0 78 Q50 48 100 78 T200 78 T300 78 T400 78 T500 78 T600 78 T700 78 T800 78 T900 78 T1000 78 T1100 78 T1200 78 T1300 78 T1400 78"/>
+      <path class="wave-a" d="M0 70 Q50 38 100 70 T200 70 T300 70 T400 70 T500 70 T600 70 T700 70 T800 70 T900 70 T1000 70 T1100 70 T1200 70 T1300 70 T1400 70"/>
+      <path class="wave-b" d="M0 88 Q50 62 100 88 T200 88 T300 88 T400 88 T500 88 T600 88 T700 88 T800 88 T900 88 T1000 88 T1100 88 T1200 88 T1300 88 T1400 88"/>
+    </svg>
+  </div>
+  <div class="grain"></div>
+</div>    <header class="site-header">
+        <div class="site-inner">
+            <nav class="site-nav">
+                <a href="/" class="logo">
+                    <svg class="logo-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="36" height="36" aria-hidden="true" focusable="false"><g fill="none" stroke="#1A9B8E" stroke-width="3.2" stroke-linecap="round"><path d="M62 22c14 8 22 22 22 38s-8 30-22 38"/><path d="M54 30c9.5 6 15 16 15 26s-5.5 20-15 26"/></g><path fill="#1A2332" d="M42 18c0-2.2 1.8-4 4-4h6c2.2 0 4 1.8 4 4v40.5c0 11.2-8.4 20.5-19.5 21.4-7.2.6-13.9-2.3-18.2-7.6-1.5-1.8-1.2-4.5.7-5.9 1.8-1.4 4.4-1.1 5.9.6 2.7 3.3 6.8 5.1 11.1 4.7 6.5-.5 11.5-5.9 11.5-12.4V18z"/></svg>                    Jian Project                </a>
+
+                <div class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </div>
+
+                <ul class="nav-links">
+                    <li><a href="/" class="">首页</a></li>
+                    <li><a href="/api/" class="">API</a></li>
+                    <li><a href="/status/" class="">服务状态</a></li>
+                    <li><a href="/terms/" class="nav-legal "><i class="fas fa-file-contract"></i> 服务条款</a></li>
+                    <li><a href="/privacy/" class="nav-legal "><i class="fas fa-user-shield"></i> 隐私政策</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main class="rs-main">
+        <div class="rs-shell">
+            <section class="rs-hero">
+                <div class="rs-brand"><span class="rs-brand-mark" aria-hidden="true"></span> Rolling-Subtitle</div>
+                <h1>地震情报实况栏</h1>
+                <p class="rs-en">Desktop Live Ticker · Open Source</p>
+                <p class="rs-hero-lead">基于 Python / PyQt5 的 Windows 滚动字幕工具：通过 WebSocket 与 HTTP 聚合多源情报，在屏幕上实时展示地震预警、速报、海啸、火山与气象等信息，并可选用 TTS、NHK/JMA 专属提示音与系统通知。当前版本 v2.9.0。</p>
+                <div class="rs-cta-row">
+                    <a href="https://github.com/Jian11323/Rolling-Subtitle" class="rs-btn rs-btn-primary" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                    <a href="https://gitee.com/jian0786/Rolling-Subtitle" class="rs-btn rs-btn-gitee" target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-code-branch"></i> Gitee
+                    </a>
+                    <a href="/rolling-update/Setup_Rolling_Subtitle.exe" class="rs-btn rs-btn-success" target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-download"></i> 下载安装包
+                    </a>
+                    <a href="/rolling-update/Rolling_Subtitle_Portable_v2.9.0.zip" class="rs-btn rs-btn-success" target="_blank" rel="noopener noreferrer" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);box-shadow:0 12px 28px rgba(14,165,233,0.28);">
+                        <i class="fas fa-file-archive"></i> 下载便携版
+                    </a>
+                </div>
+            </section>
+
+            <div class="rs-demo-block">
+                <div class="rs-demo-meta">
+                    <p class="caption">网页内滚动示例，便于感受「实况栏」形态；实际渲染与交互以桌面端程序为准。</p>
+                    <span class="rs-live-chip"><i class="fas fa-circle"></i> LIVE DEMO</span>
+                </div>
+                <div class="subtitle-demo" role="region" aria-label="滚动字幕示例">
+                    <div class="subtitle-demo-chrome" aria-hidden="true">
+                        <span></span><span></span><span></span>
+                        <span class="title">Rolling Subtitle</span>
+                    </div>
+                    <div class="subtitle-demo-track">
+                        <span><span class="dot">●</span> 气象预警：【中国气象局气象预警】广西壮族自治区南宁市马山县发布雷电黄色预警。2026/06/04 08:25，马山县气象台2026年6月4日8时25分发布雷电黄色预警信号：目前雷雨云团正逐渐靠近马山县北部乡镇，预计未来6小时，马山县大部乡镇将出现雷电，局地有短时强降水、大风，请注意防范。 <span class="dot">●</span> 地震速报：【中国地震台网中心 正式测定】2026-06-03 21:01:09，新疆阿克苏地区库车市发生3.2级地震，震源深 度27公里 <span class="dot">●</span> 地震预警：【Wolfx中国地震台网】第1报，2026-05-29 14:55:57，新疆吐鲁番市托克逊县发生5.2级地震，震源深度20公里 <span class="dot">●</span> 【Wolfx 日本气象厅 緊急地震速報】最终报，2026-06-04 07:50:08，長野県中部发生3.2级地震，震源深度10公里，最大震度3，震中精度IPF 法（5 点以上），深度精度：IPF 法（5 点以上） <span class="dot">●</span> 【Wolfx 台湾中央气象署】第4报，2026-05-20 20:25:37，花蓮縣富里鄉发生4.8级 地震，震源深度20公里</span>
+                        <span><span class="dot">●</span> 气象预警：【中国气象局气象预警】广西壮族自治区南宁市马山县发布雷电黄色预警。2026/06/04 08:25，马山县气象台2026年6月4日8时25分发布雷电黄色预警信号：目前雷雨云团正逐渐靠近马山县北部乡镇，预计未来6小时，马山县大部乡镇将出现雷电，局地有短时强降水、大风，请注意防范。 <span class="dot">●</span> 地震速报：【中国地震台网中心 正式测定】2026-06-03 21:01:09，新疆阿克苏地区库车市发生3.2级地震，震源深 度27公里 <span class="dot">●</span> 地震预警：【Wolfx中国地震台网】第1报，2026-05-29 14:55:57，新疆吐鲁番市托克逊县发生5.2级地震，震源深度20公里 <span class="dot">●</span> 【Wolfx 日本气象厅 緊急地震速報】最终报，2026-06-04 07:50:08，長野県中部发生3.2级地震，震源深度10公里，最大震度3，震中精度IPF 法（5 点以上），深度精度：IPF 法（5 点以上） <span class="dot">●</span> 【Wolfx 台湾中央气象署】第4报，2026-05-20 20:25:37，花蓮縣富里鄉发生4.8级 地震，震源深度20公里</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rs-grid">
+                <section class="rs-panel">
+                    <h2>软件简介</h2>
+                    <p>地震情报实况栏（Rolling Subtitle）是一款 Windows 桌面端滚动字幕程序：把多个数据源的情报汇到同一条实况栏里，方便副屏或桌面常驻查看。程序基于 PyQt5，数据在本机处理；详细使用说明见仓库 Wiki。</p>
+                    <p>建议运行环境为 Windows 10 及以上，具备稳定网络以访问所启用的数据源。</p>
+                </section>
+
+                <section class="rs-panel">
+                    <h2>能做什么？</h2>
+                    <ul class="rs-list">
+                        <li>以滚动字幕展示地震预警、速报、海啸、火山与气象预警等信息。</li>
+                        <li>主数据源可在 WeJet、Jian Project 中二选一；并可叠加 FSSN、Wolfx、EQSC、P2PQuake 等辅助源与国际速报源。</li>
+                        <li>可自定义界面样式与颜色，支持 NHK 一级新闻铃、JMA 警報音、TTS、系统通知，以及低 / 中 / 高 / 极致性能预设。</li>
+                        <li>提供完整日志；打包版支持自动检查更新。</li>
+                    </ul>
+                </section>
+
+                <section class="rs-panel">
+                    <h2>数据来源</h2>
+                    <ul class="rs-list">
+                        <li><strong>日本气象厅地震情报、海啸情报：</strong>P2PQuake API。</li>
+                        <li><strong>日本地震预警（JMA）：</strong>Wolfx、WeJet、Jian Project。</li>
+                        <li><strong>中国地震预警 / 速报：</strong>中国预警网、中国地震台网中心、Jian Project。</li>
+                        <li><strong>气象预警：</strong>中央气象台、WeJet、Jian Project。</li>
+                        <li><strong>FSSN：</strong>FSSN WebSocket API（地震信息与矩心矩张量解）。</li>
+                        <li><strong>其他机构速报：</strong>USGS、EMSC、HKO、GFZ、USP、CWA、KMA、BMKG、GeoNet、INGV、PTWC 等（经聚合源或官方直连）。</li>
+                        <li><strong>全局辅助源：</strong>FSSN、EQSC、台风、CENC 烈度速报、P2PQuake 等，可与任一主源并用。</li>
+                    </ul>
+                </section>
+
+                <section class="rs-panel">
+                    <h2>文档与调试</h2>
+                    <p>使用说明以仓库 Wiki 为准；调试报文结构或试连 WebSocket 时可配合本站工具。</p>
+                    <div class="related-links">
+                        <a href="https://github.com/Jian11323/Rolling-Subtitle/wiki" target="_blank" rel="noopener noreferrer"><i class="fas fa-book"></i> GitHub Wiki</a>
+                        <a href="https://gitee.com/jian0786/Rolling-Subtitle/wikis" target="_blank" rel="noopener noreferrer"><i class="fas fa-book-open"></i> Gitee Wiki</a>
+                        <a href="/api/#ws-jma-eew"><i class="fas fa-wave-square"></i> JMA 预警 WebSocket</a>
+                    </div>
+                </section>
+
+                <section class="rs-panel">
+                    <h2>更新说明 v2.9.0</h2>
+                    <ul class="rs-list">
+                        <li>移除已停运的 Fan Studio 主数据源及相关登录鉴权，主数据源改为 WeJet 与 Jian Project 二选一。</li>
+                        <li>新增 FSSN 辅助源，支持地震信息与矩心矩张量解，矩张量解可显示震源机制沙滩球。</li>
+                        <li>WeJet 新增中国地震台网烈度速报、GFZ 矩心矩张量解、委内瑞拉地震研究中心、自然灾害风险预警中心、新加坡国家环境局、日本气象厅冲合海啸观测等解析。</li>
+                        <li>Jian Project 的 JMA 预警补充警报/预报、长周期地震动与警报区域，并跳过训练报。</li>
+                        <li>P2PQuake 不再解析紧急地震速报（556），保留地震情报（551）与海啸预报（552）。</li>
+                        <li>告警音改为 NHK 一级新闻铃与 JMA 緊急地震速報警報提示音，可单独开关；通用有感/强震提示音改为语音播报（TTS）。</li>
+                    </ul>
+                </section>
+
+                <section class="rs-panel">
+                    <h2>许可证与免责声明</h2>
+                    <p class="rs-disclaimer">本项目采用 GNU GPLv3 开源协议，仅供研究、教学、应急演练与减灾等合法用途。软件按「原样」提供，不作稳定性或准确性保证。防震减灾、海啸与火山等请以各国官方机构发布为准，勿将本工具作为唯一决策依据。修改、再发布须遵守 LICENSE 并保留声明；完整条款见仓库 README。</p>
+                </section>
+            </div>
+        </div>
+    </main>
+    <footer class="site-footer">
+        <div class="site-inner">
+            <div class="footer-content">
+                <a href="/" class="footer-logo">
+                    <svg class="logo-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="36" height="36" aria-hidden="true" focusable="false"><g fill="none" stroke="#1A9B8E" stroke-width="3.2" stroke-linecap="round"><path d="M62 22c14 8 22 22 22 38s-8 30-22 38"/><path d="M54 30c9.5 6 15 16 15 26s-5.5 20-15 26"/></g><path fill="#1A2332" d="M42 18c0-2.2 1.8-4 4-4h6c2.2 0 4 1.8 4 4v40.5c0 11.2-8.4 20.5-19.5 21.4-7.2.6-13.9-2.3-18.2-7.6-1.5-1.8-1.2-4.5.7-5.9 1.8-1.4 4.4-1.1 5.9.6 2.7 3.3 6.8 5.1 11.1 4.7 6.5-.5 11.5-5.9 11.5-12.4V18z"/></svg>                    Jian Project                </a>
+                <p>计算机爱好者作品</p>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 – 2026 Jian Project. 保留所有权利。</p>
+            </div>
+            <div class="beian">
+                <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">宁ICP备2026000185号</a>
+                <span>｜</span>
+                <a href="https://beian.mps.gov.cn" target="_blank" rel="noopener noreferrer">
+                    <img src="/beian.png" alt="公安备案">宁公网安备64022102000165号                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            const navLinks = document.querySelector('.nav-links');
+            if (!mobileMenuBtn || !navLinks) return;
+
+            mobileMenuBtn.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                mobileMenuBtn.querySelector('i').classList.toggle('fa-bars');
+                mobileMenuBtn.querySelector('i').classList.toggle('fa-times');
+            });
+
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                    mobileMenuBtn.querySelector('i').classList.add('fa-bars');
+                    mobileMenuBtn.querySelector('i').classList.remove('fa-times');
+                });
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 1024) {
+                    navLinks.classList.remove('active');
+                    const icon = mobileMenuBtn.querySelector('i');
+                    if (icon) {
+                        icon.classList.add('fa-bars');
+                        icon.classList.remove('fa-times');
+                    }
+                }
+            });
+        })();
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                // API 文档侧栏用 hash 切节，不走整页锚点平滑滚动
+                if (this.closest('#apiSidebar, .page-main--docs')) return;
+                const targetId = this.getAttribute('href');
+                if (!targetId || targetId === '#') return;
+                const targetElement = document.querySelector(targetId);
+                if (!targetElement) return;
+                e.preventDefault();
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
