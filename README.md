@@ -1,10 +1,8 @@
 # jian11323.github.io
 
-Jian Project 站点静态镜像（由 `web/public` 预渲染）。
+Jian11323 的 **独立** GitHub Pages 入口页。
 
-- 首页：与 sismotide.top 同款介绍
-- `/api/` `/get/` `/status/`：API 文档套
-- `/starquake/` `/rolling-subtitle/`：作品介绍
-- `/welcome/`：API 欢迎入口页
-
-正式实时服务仍以 [api.sismotide.top](https://api.sismotide.top/) / [sismotide.top](https://sismotide.top/) 为准。
+- 站点：https://jian11323.github.io/
+- **不**托管 sismotide / API 文档镜像；正式站点请访问：
+  - https://sismotide.top/
+  - https://api.sismotide.top/

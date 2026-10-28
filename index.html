@@ -1,1050 +1,192 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Jian Project</title>
-    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="https://cdn.jsdmirror.com/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css'">
-    <link href="https://fonts.googleapis.cn/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Sora:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" onerror="this.onerror=null;this.href=this.href.replace('://fonts.googleapis.cn/','://fonts.font.im/')">
-    <style>:root {
-  --primary-color: #1a9b8e;
-  --secondary-color: #5ec4b8;
-  --accent-color: #c4a574;
-  --light-color: #f7fafb;
-  --dark-color: #1a2332;
-  --gray-color: #4a5568;
-  --success-color: #00b894;
-  --warning-color: #fdcb6e;
-  --info-color: #0984e3;
-  --page-bg: #eef3f4;
-  --card-bg: #ffffff;
-  --border-radius-lg: 18px;
-  --border-radius-md: 12px;
-  --border-radius-sm: 8px;
-  --shadow-soft: 0 14px 30px rgba(15, 23, 42, 0.08);
-  --shadow-subtle: 0 6px 18px rgba(15, 23, 42, 0.04);
-  --transition: all 0.3s linear;
-  --site-header-h: 80px;
-  --site-shell-max: 1280px;
-  --site-shell-pad: 20px;
-  /* 正文底部 → 底栏：全站唯一间距来源，避免各页再叠 padding */
-  --site-end-gap: 48px;
-  /* 全站入场：线性、等距错开 */
-  --jp-enter-ease: linear;
-  --jp-enter-dur: 0.52s;
-  --jp-enter-dist: 14px;
-  --jp-enter-stagger: 0.08s;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jian11323 · GitHub Pages</title>
+  <meta name="description" content="Jian11323 个人 GitHub Pages：项目入口与外链，独立于 sismotide 正式站点。" />
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.cn" />
+  <link rel="preconnect" href="https://fonts.gstatic.cn" crossorigin />
+  <link href="https://fonts.googleapis.cn/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet" onerror="this.onerror=null;this.href=this.href.replace('://fonts.googleapis.cn/','://fonts.font.im/')" />
+  <style>
+:root {
+  --ink: #1a2332;
+  --ink-soft: #4a5568;
+  --mist: #eef3f4;
+  --teal: #1a9b8e;
+  --teal-deep: #147f74;
+  --sand: #c4a574;
+  --shadow: 0 18px 40px rgba(26, 35, 50, 0.08);
+  --radius: 18px;
 }
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-html {
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-  overflow-x: hidden;
-  height: 100%;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
 body {
-  margin: 0;
+  font-family: "Noto Sans SC", Sora, sans-serif;
+  color: var(--ink);
+  background: #eef3f4;
   min-height: 100%;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  font-family: 'Noto Sans SC', Sora, sans-serif;
-  line-height: 1.6;
-  color: var(--dark-color);
-  background: transparent;
   overflow-x: hidden;
-  max-width: 100%;
-  position: relative;
-  z-index: 1;
 }
-img, svg, video, iframe {
-  max-width: 100%;
-  height: auto;
-}
-/* 主内容区占满剩余高度；须高于 atmosphere(fixed z-index:0) */
-main,
-.page-stack,
-.page-main {
-  flex: 1 0 auto;
-  width: 100%;
-  position: relative;
-  z-index: 1;
-}
-.page-stack,
-.page-main:not(.page-main--docs) {
-  animation: jp-enter-fade calc(var(--jp-enter-dur) + 0.04s) var(--jp-enter-ease) var(--jp-enter-stagger) both;
-}
-.page-stack {
-  flex: 1 0 auto;
-}
-/* API 文档：禁止父级 transform，避免弄坏 fixed 侧栏 */
-.page-main--docs {
-  animation: none;
-  opacity: 1;
-  transform: none;
-}
-.page-main--docs .layout,
-.page-main--docs .main {
-  animation: none !important;
-  opacity: 1 !important;
-  transform: none !important;
-}
-/* 其它页内层 main 不叠入场 */
-.page-main > main,
-.page-main main.main {
-  animation: none;
-  opacity: 1;
-  transform: none;
-}
-.site-shell,
-.container {
-  width: 100%;
-  max-width: var(--site-shell-max);
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: max(var(--site-shell-pad), env(safe-area-inset-left));
-  padding-right: max(var(--site-shell-pad), env(safe-area-inset-right));
-}
-header.site-header {
-  background-color: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-  position: fixed;
-  width: 100%;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-  padding-top: env(safe-area-inset-top);
-  /* 顶栏自身 fixed，且内含移动端 fixed 菜单，禁用 transform */
-  animation: jp-enter-fade var(--jp-enter-dur) var(--jp-enter-ease) both;
-}
-.site-inner {
-  width: 100%;
-  max-width: var(--site-shell-max);
-  margin: 0 auto;
-  padding-left: max(var(--site-shell-pad), env(safe-area-inset-left));
-  padding-right: max(var(--site-shell-pad), env(safe-area-inset-right));
-}
-.site-header .site-inner {
-  max-width: var(--site-shell-max);
-}
-nav.site-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 0;
-}
-.site-header .logo {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  letter-spacing: 0.03em;
-  font-family: Sora, 'Noto Sans SC', sans-serif;
-}
-.site-header .logo i {
-  margin-right: 10px;
-  font-size: 2rem;
-}
-.site-header .logo .logo-mark,
-footer.site-footer .footer-logo .logo-mark {
-  width: 36px;
-  height: 36px;
-  margin-right: 10px;
-  flex-shrink: 0;
-  display: block;
-  overflow: visible;
-}
-.site-header .logo i { display: none; }
-footer.site-footer .footer-logo i { display: none; }
-
-.site-header .nav-links {
-  display: flex;
-  align-items: center;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.site-header .nav-links li {
-  margin-left: 2rem;
-  display: flex;
-  align-items: center;
-}
-.site-header .nav-links a {
-  text-decoration: none;
-  color: var(--gray-color);
-  font-weight: 500;
-  transition: var(--transition);
-  position: relative;
-  padding: 5px 0;
-}
-.site-header .nav-links a:hover,
-.site-header .nav-links a.active {
-  color: var(--primary-color);
-}
-.site-header .nav-links a::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background-color: var(--primary-color);
-  transition: var(--transition);
-}
-.site-header .nav-links a:hover::after,
-.site-header .nav-links a.active::after {
-  width: 100%;
-}
-.site-header .nav-links a.nav-legal {
-  color: var(--primary-color);
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-.site-header .nav-links a.nav-legal i {
-  font-size: 0.9em;
-  opacity: 0.9;
-}
-.site-header .mobile-menu-btn {
-  display: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--dark-color);
-  border: none;
-  background: transparent;
-  padding: 6px 8px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-.page-main {
-  padding-top: 110px;
-  padding-bottom: 40px;
-}
-.hero-legal {
-  margin-top: 1.25rem;
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-  justify-content: center;
-}
-.hero-legal a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.55rem 1rem;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.92);
-  color: #1a9b8e;
-  font-weight: 600;
-  text-decoration: none;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
-  border: 1px solid rgba(26, 155, 142, 0.2);
-}
-.hero-legal a:hover { background: #fff; color: #147f74; }
-
-footer.site-footer {
-  background: transparent;
-  color: var(--gray-color);
-  padding: 28px 0 22px;
-  text-align: center;
-  margin: var(--site-end-gap) 0 0;
-  width: 100%;
-  max-width: none;
-  box-sizing: border-box;
-  display: block;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-  border-top: 1px solid rgba(26, 35, 50, 0.08);
-  animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) calc(var(--jp-enter-stagger) * 2) both;
-}
-footer.site-footer .site-inner {
-  width: 100%;
-  max-width: var(--site-shell-max);
-  margin-left: auto;
-  margin-right: auto;
-  background: transparent;
-}
-footer.site-footer a {
-  color: var(--gray-color);
-  text-decoration: none;
-}
-footer.site-footer .footer-content {
-  margin-bottom: 8px;
-}
-footer.site-footer .footer-logo {
-  font-size: 1.55rem;
-  font-weight: 700;
-  color: var(--dark-color);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  font-family: Sora, 'Noto Sans SC', sans-serif;
-}
-footer.site-footer .footer-logo i {
-  font-size: 1.7rem;
-  color: var(--primary-color);
-}
-footer.site-footer .footer-content p {
-  color: var(--gray-color);
-  font-size: 0.95rem;
-  margin: 0;
-}
-footer.site-footer .copyright,
-footer.site-footer .copyright p {
-  color: var(--gray-color);
-  font-size: 0.9rem;
-  margin: 0 0 6px;
-}
-footer.site-footer .beian {
-  color: var(--gray-color);
-  font-size: 0.85rem;
-  margin-top: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 6px 8px;
-}
-footer.site-footer .beian a {
-  color: var(--gray-color);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-footer.site-footer .beian a:hover {
-  color: var(--primary-color);
-  text-decoration: underline;
-}
-footer.site-footer .beian img {
-  width: 16px;
-  height: 16px;
-  vertical-align: middle;
-}
-@media (max-width: 1024px) {
-  :root { --site-header-h: 68px; }
-  .site-header .logo { font-size: 1.35rem; }
-  .site-header .logo i { font-size: 1.55rem; margin-right: 8px; }
-  nav.site-nav { padding: 14px 0; }
-  .page-main { padding-top: 96px; }
-  .site-header .mobile-menu-btn { display: block; }
-  .site-header .nav-links {
-    position: fixed;
-    top: calc(var(--site-header-h) + env(safe-area-inset-top));
-    left: -100%;
-    width: 100%;
-    height: calc(100dvh - var(--site-header-h) - env(safe-area-inset-top));
-    background-color: #fff;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    padding: 12px 20px 32px;
-    overflow-y: auto;
-    transition: left 0.28s ease;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    z-index: 999;
-  }
-  .site-header .nav-links.active { left: 0; }
-  .site-header .nav-links li {
-    margin: 0;
-    width: 100%;
-  }
-  .site-header .nav-links a {
-    display: flex;
-    width: 100%;
-    padding: 14px 4px;
-    font-size: 1.02rem;
-  }
-  .site-header .nav-links a::after { display: none; }
-  .site-header .nav-dropdown-menu {
-    position: static;
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-    box-shadow: none;
-    margin: 0 0 8px 12px;
-  }
-}
-@media (max-width: 640px) {
-  :root {
-    --site-shell-pad: 14px;
-    --site-end-gap: 32px;
-  }
-  .site-header .logo { font-size: 1.2rem; }
-  .page-main { padding-top: 88px; padding-bottom: 28px; }
-  footer.site-footer { padding: 28px 0 20px; }
-  footer.site-footer .footer-logo { font-size: 1.45rem; }
-}
-
-/* —— 全站线性入场 —— */
-@keyframes jp-enter {
-  from {
-    opacity: 0;
-    transform: translate3d(0, var(--jp-enter-dist), 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-@keyframes jp-enter-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.jp-enter {
-  animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) both;
-}
-.jp-enter-seq > * {
-  opacity: 0;
-  animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) both;
-}
-.jp-enter-seq > *:nth-child(1) { animation-delay: 0s; }
-.jp-enter-seq > *:nth-child(2) { animation-delay: calc(var(--jp-enter-stagger) * 1); }
-.jp-enter-seq > *:nth-child(3) { animation-delay: calc(var(--jp-enter-stagger) * 2); }
-.jp-enter-seq > *:nth-child(4) { animation-delay: calc(var(--jp-enter-stagger) * 3); }
-.jp-enter-seq > *:nth-child(5) { animation-delay: calc(var(--jp-enter-stagger) * 4); }
-.jp-enter-seq > *:nth-child(6) { animation-delay: calc(var(--jp-enter-stagger) * 5); }
-.jp-enter-seq > *:nth-child(7) { animation-delay: calc(var(--jp-enter-stagger) * 6); }
-.jp-enter-seq > *:nth-child(8) { animation-delay: calc(var(--jp-enter-stagger) * 7); }
-@media (prefers-reduced-motion: reduce) {
-  .site-header,
-  main,
-  .page-stack,
-  .page-main,
-  .page-main--docs,
-  footer.site-footer,
-  .jp-enter,
-  .jp-enter-seq > * {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}.atmosphere {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse 90% 70% at 50% 42%, #f4faf9 0%, #e8f0f1 55%, #dde7e9 100%);
-}
-.atmosphere .orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(48px);
-  will-change: transform, opacity;
-}
-.atmosphere .orb-a {
-  width: min(58vw, 480px);
-  height: min(58vw, 480px);
-  left: -8%;
-  top: -12%;
-  background: rgba(26, 155, 142, 0.28);
-  animation: jp-orb-a 18s ease-in-out infinite;
-}
-.atmosphere .orb-b {
-  width: min(48vw, 420px);
-  height: min(48vw, 420px);
-  right: -10%;
-  bottom: -8%;
-  background: rgba(196, 165, 116, 0.26);
-  animation: jp-orb-b 22s ease-in-out infinite;
-}
-.atmosphere .orb-c {
-  width: min(36vw, 300px);
-  height: min(36vw, 300px);
-  left: 42%;
-  top: 58%;
-  background: rgba(94, 196, 184, 0.18);
-  animation: jp-orb-c 16s ease-in-out infinite;
-}
-.atmosphere .ripple-field {
-  position: absolute;
-  left: 58%;
-  top: 40%;
-  width: 0;
-  height: 0;
-}
-.atmosphere .ripple {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: min(78vw, 620px);
-  height: min(78vw, 620px);
-  margin-left: calc(min(78vw, 620px) / -2);
-  margin-top: calc(min(78vw, 620px) / -2);
-  border: 1.5px solid rgba(26, 155, 142, 0.35);
-  border-radius: 50%;
-  opacity: 0;
-  animation: jp-ripple 6.5s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
-}
-.atmosphere .ripple:nth-child(2) {
-  border-color: rgba(26, 155, 142, 0.28);
-  animation-delay: 2.1s;
-}
-.atmosphere .ripple:nth-child(3) {
-  border-color: rgba(196, 165, 116, 0.32);
-  animation-delay: 4.2s;
-}
-.atmosphere .wave-canvas {
-  position: absolute;
-  left: -10%;
-  right: -10%;
-  bottom: 8%;
-  height: 140px;
-  opacity: 0.5;
-}
-.atmosphere .wave-canvas svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-.atmosphere .wave-canvas path {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.atmosphere .wave-a {
-  stroke: rgba(26, 155, 142, 0.55);
-  stroke-width: 1.8;
-  animation: jp-wave 12s linear infinite;
-}
-.atmosphere .wave-b {
-  stroke: rgba(196, 165, 116, 0.45);
-  stroke-width: 1.4;
-  animation: jp-wave 18s linear infinite reverse;
-}
-.atmosphere .wave-c {
-  stroke: rgba(26, 155, 142, 0.28);
-  stroke-width: 1.2;
-  animation: jp-wave 9s linear infinite;
-}
-.atmosphere .grain {
-  position: absolute;
-  inset: 0;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation: jp-grain 8s steps(6) infinite;
-}
-@keyframes jp-orb-a {
-  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
-  40% { transform: translate(12%, 18%) scale(1.12); opacity: 1; }
-  70% { transform: translate(4%, 28%) scale(0.94); opacity: 0.75; }
-}
-@keyframes jp-orb-b {
-  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.65; }
-  35% { transform: translate(-16%, -12%) scale(1.1); opacity: 0.95; }
-  65% { transform: translate(-6%, -22%) scale(0.92); opacity: 0.7; }
-}
-@keyframes jp-orb-c {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-  50% { transform: translate(-30%, -70%) scale(1.2); opacity: 0.85; }
-}
-@keyframes jp-ripple {
-  0% { transform: scale(0.18); opacity: 0.55; }
-  70% { opacity: 0.18; }
-  100% { transform: scale(1); opacity: 0; }
-}
-@keyframes jp-wave {
-  from { transform: translateX(0); }
-  to { transform: translateX(-8.33%); }
-}
-@keyframes jp-grain {
-  0%, 100% { transform: translate(0, 0); }
-  25% { transform: translate(-1%, 1%); }
-  50% { transform: translate(1%, -1%); }
-  75% { transform: translate(-1%, -1%); }
-}
-@media (max-width: 760px) {
-  .atmosphere .ripple-field { left: 50%; top: 28%; }
-  .atmosphere .wave-canvas { bottom: 4%; height: 100px; opacity: 0.38; }
+.atmosphere {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+  background: radial-gradient(ellipse 90% 70% at 50% 42%, #ffffff 0%, var(--mist) 68%, #e4ecee 100%);
+}
+.orb { position: absolute; border-radius: 50%; filter: blur(48px); }
+.orb-a {
+  width: min(58vw, 480px); height: min(58vw, 480px);
+  left: -8%; top: -12%; background: rgba(26, 155, 142, 0.28);
+  animation: drift-a 18s ease-in-out infinite;
+}
+.orb-b {
+  width: min(48vw, 420px); height: min(48vw, 420px);
+  right: -10%; bottom: -8%; background: rgba(196, 165, 116, 0.26);
+  animation: drift-b 22s ease-in-out infinite;
+}
+.page {
+  position: relative; z-index: 1;
+  min-height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: clamp(28px, 5vw, 56px) 20px;
+  gap: clamp(28px, 5vw, 44px);
+}
+.brand {
+  display: flex; align-items: center; gap: 14px;
+  text-decoration: none; color: inherit;
+}
+.brand img { width: 56px; height: 56px; border-radius: 14px; }
+.brand-text {
+  font-family: Sora, "Noto Sans SC", sans-serif;
+  font-weight: 700; font-size: clamp(1.45rem, 3.2vw, 1.9rem);
+}
+.brand-text span { color: var(--teal-deep); font-weight: 600; }
+.lead {
+  text-align: center; max-width: 34rem;
+  color: var(--ink-soft); line-height: 1.7; font-size: 0.98rem;
+}
+.lead strong { color: var(--ink); font-weight: 600; }
+.note {
+  display: inline-block; margin-top: 10px;
+  padding: 6px 12px; border-radius: 999px;
+  background: rgba(26, 155, 142, 0.1); color: var(--teal-deep);
+  font-size: 0.82rem; font-weight: 600;
+}
+.grid {
+  width: min(720px, 100%);
+  display: grid; gap: 12px;
+}
+.card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px; border-radius: var(--radius);
+  text-decoration: none; color: var(--ink);
+  border: 1px solid rgba(255,255,255,0.75);
+  box-shadow: var(--shadow);
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(26, 155, 142, 0.35);
+  box-shadow: 0 22px 44px rgba(26, 35, 50, 0.12);
+}
+.card:nth-child(1) { background: linear-gradient(135deg, #dff3ef, #cfeae5); }
+.card:nth-child(2) { background: linear-gradient(135deg, #f3efe7, #ebe3d4); }
+.card:nth-child(3) { background: linear-gradient(135deg, #e4eaef, #d5dee7); }
+.card:nth-child(4) { background: linear-gradient(135deg, #eef1f4, #e2e7ed); }
+.card:nth-child(5) { background: linear-gradient(135deg, #f6ebe8, #eeddd8); }
+.icon {
+  width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+  display: grid; place-items: center;
+  background: rgba(255,255,255,0.72); color: var(--teal-deep);
+  font-family: Sora, sans-serif; font-weight: 700; font-size: 0.85rem;
+}
+.copy { min-width: 0; }
+.title {
+  font-family: Sora, "Noto Sans SC", sans-serif;
+  font-weight: 600; font-size: 1.02rem;
+}
+.desc { font-size: 0.82rem; color: var(--ink-soft); margin-top: 2px; }
+.foot {
+  text-align: center; font-size: 0.82rem; color: var(--ink-soft); line-height: 1.8;
+}
+.foot a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid transparent; }
+.foot a:hover { color: var(--teal-deep); border-bottom-color: rgba(26,155,142,0.45); }
+@keyframes drift-a {
+  0%,100% { transform: translate(0,0) scale(1); opacity: .7; }
+  40% { transform: translate(12%,18%) scale(1.12); opacity: 1; }
+}
+@keyframes drift-b {
+  0%,100% { transform: translate(0,0) scale(1); opacity: .65; }
+  35% { transform: translate(-16%,-12%) scale(1.1); opacity: .95; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .atmosphere .orb,
-  .atmosphere .ripple,
-  .atmosphere .wave-a,
-  .atmosphere .wave-b,
-  .atmosphere .wave-c,
-  .atmosphere .grain {
-    animation: none !important;
-  }
-  .atmosphere .orb { opacity: 0.55; }
-  .atmosphere .ripple { opacity: 0.15; transform: scale(0.7); }
-}</style>
-<style>
-        h1, h2, h3, h4 {
-            font-family: 'Sora', sans-serif;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        /* 顶栏 / 底栏 / .container 壳层统一走 includes/chrome.css.php */
-        
-        /* 英雄区域：背景交给全站 atmosphere */
-        .hero {
-            padding: 140px 0 72px;
-            background: transparent;
-            text-align: center;
-            position: relative;
-            overflow: visible;
-            z-index: 1;
-        }
-        
-        .hero::before,
-        .hero::after {
-            display: none;
-        }
-        
-        .hero h1 {
-            font-size: 3.2rem;
-            margin-bottom: 1rem;
-            color: var(--dark-color);
-            opacity: 0;
-            animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) both;
-        }
-        
-        .hero p {
-            font-size: 1.1rem;
-            color: var(--gray-color);
-            max-width: 640px;
-            margin: 0 auto 2.2rem;
-            opacity: 0;
-            animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) calc(var(--jp-enter-stagger) * 1) both;
-        }
-        
-        .highlight {
-            color: var(--primary-color);
-            position: relative;
-            display: inline-block;
-        }
-        
-        .highlight::after {
-            content: '';
-            position: absolute;
-            bottom: 5px;
-            left: 0;
-            width: 100%;
-            height: 8px;
-            background-color: rgba(26, 155, 142, 0.2);
-            z-index: -1;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 12px 30px;
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: var(--transition);
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        
-        .btn:hover {
-            background-color: #147f74;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(26, 155, 142, 0.26);
-        }
-
-        .hero .btn {
-            opacity: 0;
-            animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) calc(var(--jp-enter-stagger) * 2) both;
-        }
-
-        .hero-legal {
-            margin-top: 1.25rem;
-            display: inline-flex;
-            flex-wrap: wrap;
-            gap: 0.65rem;
-            justify-content: center;
-            opacity: 0;
-            animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) calc(var(--jp-enter-stagger) * 3) both;
-        }
-        .hero-legal a {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.55rem 1rem;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.92);
-            color: #1a9b8e;
-            font-weight: 600;
-            text-decoration: none;
-            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
-            border: 1px solid rgba(26, 155, 142, 0.2);
-            transition: var(--transition);
-        }
-        .hero-legal a:hover { background: #fff; color: #147f74; transform: translateY(-1px); }
-        
-        /* 内容区域通用样式：上下内边距不含「到底间距」，到底间距只走 --site-end-gap */
-        section {
-            padding: 72px 0 0;
-        }
-        
-        .section-title {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-        
-        .section-title h2 {
-            font-size: 2.2rem;
-            color: var(--dark-color);
-            display: inline-block;
-            position: relative;
-        }
-        
-        .section-title h2::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 3px;
-            background-color: var(--primary-color);
-            border-radius: 999px;
-        }
-
-        /* 通用卡片和代码块样式（供其他页面复用） */
-        .card {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-soft);
-            padding: 1.8rem 1.6rem;
-        }
-
-        .code-block {
-            background-color: #111827;
-            color: #f9fafb;
-            border-radius: var(--border-radius-md);
-            padding: 1.2rem 1.4rem;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.9rem;
-            overflow-x: auto;
-            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.5);
-        }
-
-        .code-block pre {
-            white-space: pre-wrap;
-            margin: 0;
-        }
-
-        /* 首页功能入口卡片 */
-        .features {
-            margin-top: -30px;
-        }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(220px, 1fr));
-            gap: 24px;
-            width: 100%;
-            max-width: 1080px;
-            margin: 0 auto;
-            justify-content: center;
-        }
-
-        .feature-card {
-            background-color: rgba(255, 255, 255, 0.78);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-soft);
-            padding: 1.8rem 1.6rem;
-            transition: transform 0.25s linear, box-shadow 0.25s linear, background-color 0.25s linear;
-            position: relative;
-            overflow: hidden;
-            opacity: 0;
-            animation: jp-enter var(--jp-enter-dur) var(--jp-enter-ease) both;
-        }
-        .feature-card:nth-child(1) { animation-delay: calc(var(--jp-enter-stagger) * 2); }
-        .feature-card:nth-child(2) { animation-delay: calc(var(--jp-enter-stagger) * 3); }
-        .feature-card:nth-child(3) { animation-delay: calc(var(--jp-enter-stagger) * 4); }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at top right, rgba(94, 196, 184, 0.35), transparent 60%);
-            opacity: 0;
-            transition: opacity 0.25s linear;
-            pointer-events: none;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.10);
-        }
-
-        .feature-card:hover::before {
-            opacity: 1;
-        }
-
-        .feature-icon {
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-        }
-
-        .feature-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 0.6rem;
-            color: var(--dark-color);
-        }
-
-        .feature-card p {
-            font-size: 0.95rem;
-            color: var(--gray-color);
-            margin-bottom: 1.2rem;
-        }
-
-        .feature-link {
-            display: inline-flex;
-            align-items: center;
-            font-size: 0.95rem;
-            color: var(--primary-color);
-            font-weight: 500;
-            text-decoration: none;
-        }
-
-        .feature-link i {
-            margin-left: 6px;
-            transition: transform 0.2s linear;
-        }
-
-        .feature-card:hover .feature-link i {
-            transform: translateX(4px);
-        }
-
-        /* 页脚样式统一走 includes/chrome.css.php 的 footer.site-footer */
-        
-        /* 响应式设计 */
-        @media (max-width: 1024px) {
-            .hero { padding: 120px 0 56px; }
-            .hero h1 { font-size: 2.6rem; }
-            section { padding: 56px 0 0; }
-        }
-
-        @media (max-width: 768px) {
-            .hero { padding: 108px 0 48px; }
-            .hero h1 {
-                font-size: 2.1rem;
-            }
-            
-            .section-title h2 {
-                font-size: 1.7rem;
-            }
-            
-            section {
-                padding: 48px 0 0;
-            }
-
-            .feature-grid {
-                grid-template-columns: 1fr;
-                max-width: 420px;
-                gap: 16px;
-            }
-            .feature-card { padding: 1.35rem 1.2rem; }
-        }
-
-        @media (max-width: 992px) and (min-width: 769px) {
-            .feature-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                max-width: 720px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .hero h1 {
-                font-size: 1.7rem;
-            }
-            
-            .hero p {
-                font-size: 1rem;
-            }
-            
-            .btn {
-                padding: 10px 25px;
-            }
-        }
-    </style></head>
+  .orb { animation: none !important; opacity: .55; }
+}
+  </style>
+</head>
 <body>
-<div class="atmosphere" aria-hidden="true">
-  <div class="orb orb-a"></div>
-  <div class="orb orb-b"></div>
-  <div class="orb orb-c"></div>
-  <div class="ripple-field">
-    <div class="ripple"></div>
-    <div class="ripple"></div>
-    <div class="ripple"></div>
+  <div class="atmosphere" aria-hidden="true">
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
   </div>
-  <div class="wave-canvas">
-    <svg viewBox="0 0 1200 140" preserveAspectRatio="none">
-      <path class="wave-c" d="M0 78 Q50 48 100 78 T200 78 T300 78 T400 78 T500 78 T600 78 T700 78 T800 78 T900 78 T1000 78 T1100 78 T1200 78 T1300 78 T1400 78"/>
-      <path class="wave-a" d="M0 70 Q50 38 100 70 T200 70 T300 70 T400 70 T500 70 T600 70 T700 70 T800 70 T900 70 T1000 70 T1100 70 T1200 70 T1300 70 T1400 70"/>
-      <path class="wave-b" d="M0 88 Q50 62 100 88 T200 88 T300 88 T400 88 T500 88 T600 88 T700 88 T800 88 T900 88 T1000 88 T1100 88 T1200 88 T1300 88 T1400 88"/>
-    </svg>
-  </div>
-  <div class="grain"></div>
-</div>    <header class="site-header">
-        <div class="site-inner">
-            <nav class="site-nav">
-                <a href="/" class="logo">
-                    <svg class="logo-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="36" height="36" aria-hidden="true" focusable="false"><g fill="none" stroke="#1A9B8E" stroke-width="3.2" stroke-linecap="round"><path d="M62 22c14 8 22 22 22 38s-8 30-22 38"/><path d="M54 30c9.5 6 15 16 15 26s-5.5 20-15 26"/></g><path fill="#1A2332" d="M42 18c0-2.2 1.8-4 4-4h6c2.2 0 4 1.8 4 4v40.5c0 11.2-8.4 20.5-19.5 21.4-7.2.6-13.9-2.3-18.2-7.6-1.5-1.8-1.2-4.5.7-5.9 1.8-1.4 4.4-1.1 5.9.6 2.7 3.3 6.8 5.1 11.1 4.7 6.5-.5 11.5-5.9 11.5-12.4V18z"/></svg>                    Jian Project                </a>
 
-                <div class="mobile-menu-btn">
-                    <i class="fas fa-bars"></i>
-                </div>
+  <main class="page">
+    <a class="brand" href="https://github.com/Jian11323">
+      <img src="./assets/logo-mark.png" alt="Jian Project" width="56" height="56" />
+      <div class="brand-text">Jian11323 <span>· Pages</span></div>
+    </a>
 
-                <ul class="nav-links">
-                    <li><a href="/" class="active">首页</a></li>
-                    <li><a href="/api/" class="">API</a></li>
-                    <li><a href="/status/" class="">服务状态</a></li>
-                    <li><a href="/terms/" class="nav-legal "><i class="fas fa-file-contract"></i> 服务条款</a></li>
-                    <li><a href="/privacy/" class="nav-legal "><i class="fas fa-user-shield"></i> 隐私政策</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-<main class="page-stack">
-<!-- 首页英雄区域 -->
-    <section id="home" class="hero">
-        <div class="container">
-            <h1>你好，我是<span class="highlight">纪安</span></h1>
-            <p>我是一名计算机爱好者，目前在自学编程，欢迎来到 Jian Project</p>
-            <div class="hero-legal">
-                <a href="/terms/"><i class="fas fa-file-contract"></i> 服务条款</a>
-                <a href="/privacy/"><i class="fas fa-user-shield"></i> 隐私政策</a>
-            </div>
-        </div>
-    </section>
+    <p class="lead">
+      这是 GitHub Pages <strong>独立入口页</strong>，只放项目跳转。<br />
+      正式站点、API 文档与在线服务仍在 sismotide.top / api.sismotide.top。
+      <span class="note">不与主站页面混合托管</span>
+    </p>
 
-    <!-- 功能入口 -->
-    <section id="features" class="features">
-        <div class="container">
-            <div class="section-title">
-                <h2>本站内容</h2>
-            </div>
-            <div class="feature-grid">
-                <a href="/api/" class="feature-card" style="text-decoration: none;">
-                    <div class="feature-icon">
-                        <i class="fas fa-wave-square"></i>
-                    </div>
-                    <h3>Jian Project API</h3>
-                    <p>多源 WebSocket 数据推送服务总览：可用路径、消息协议与字段文档入口。</p>
-                    <span class="feature-link">
-                        查看文档
-                        <i class="fas fa-arrow-right"></i>
-                    </span>
-                </a>
-                <a href="/starquake/" class="feature-card" style="text-decoration: none;">
-                    <div class="feature-icon">
-                        <i class="fas fa-globe-asia"></i>
-                    </div>
-                    <h3>StarQuake</h3>
-                    <p>纯 Rust 桌面端地震实时监看：多源预警 / 速报、地图波圈与测站烈度；提供 GitHub 与本站镜像下载。</p>
-                    <span class="feature-link">
-                        进入介绍
-                        <i class="fas fa-arrow-right"></i>
-                    </span>
-                </a>
-                <a href="/rolling-subtitle/" class="feature-card" style="text-decoration: none;">
-                    <div class="feature-icon">
-                        <i class="fas fa-tv"></i>
-                    </div>
-                    <h3>地震情报实况栏</h3>
-                    <p>基于 Python/PyQt5，以滚动字幕形式展示地震预警、速报、海啸与火山情报等；支持多数据源与自定义样式。</p>
-                    <span class="feature-link">
-                        进入介绍
-                        <i class="fas fa-arrow-right"></i>
-                    </span>
-                </a>
-            </div>
-        </div>
-    </section>
-</main>
+    <nav class="grid" aria-label="外链">
+      <a class="card" href="https://github.com/Jian11323" target="_blank" rel="noopener">
+        <span class="icon">GH</span>
+        <span class="copy">
+          <span class="title">GitHub 主页</span>
+          <span class="desc">个人仓库与 Profile README</span>
+        </span>
+      </a>
+      <a class="card" href="https://github.com/Jian11323/StarQuake" target="_blank" rel="noopener">
+        <span class="icon">SQ</span>
+        <span class="copy">
+          <span class="title">StarQuake</span>
+          <span class="desc">地震实时监看客户端 · 源码仓库</span>
+        </span>
+      </a>
+      <a class="card" href="https://sismotide.top/starquake" target="_blank" rel="noopener">
+        <span class="icon">⬇</span>
+        <span class="copy">
+          <span class="title">StarQuake 介绍 / 下载</span>
+          <span class="desc">正式站点产品页（sismotide.top）</span>
+        </span>
+      </a>
+      <a class="card" href="https://api.sismotide.top/" target="_blank" rel="noopener">
+        <span class="icon">API</span>
+        <span class="copy">
+          <span class="title">Jian Project API</span>
+          <span class="desc">WebSocket / GET 文档与服务入口</span>
+        </span>
+      </a>
+      <a class="card" href="https://sismotide.top/" target="_blank" rel="noopener">
+        <span class="icon">JP</span>
+        <span class="copy">
+          <span class="title">Jian Project 主站</span>
+          <span class="desc">你好，我是纪安 · 本站内容</span>
+        </span>
+      </a>
+    </nav>
 
-    <footer class="site-footer">
-        <div class="site-inner">
-            <div class="footer-content">
-                <a href="/" class="footer-logo">
-                    <svg class="logo-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="36" height="36" aria-hidden="true" focusable="false"><g fill="none" stroke="#1A9B8E" stroke-width="3.2" stroke-linecap="round"><path d="M62 22c14 8 22 22 22 38s-8 30-22 38"/><path d="M54 30c9.5 6 15 16 15 26s-5.5 20-15 26"/></g><path fill="#1A2332" d="M42 18c0-2.2 1.8-4 4-4h6c2.2 0 4 1.8 4 4v40.5c0 11.2-8.4 20.5-19.5 21.4-7.2.6-13.9-2.3-18.2-7.6-1.5-1.8-1.2-4.5.7-5.9 1.8-1.4 4.4-1.1 5.9.6 2.7 3.3 6.8 5.1 11.1 4.7 6.5-.5 11.5-5.9 11.5-12.4V18z"/></svg>                    Jian Project                </a>
-                <p>计算机爱好者作品</p>
-            </div>
-            <div class="copyright">
-                <p>&copy; 2025 – 2026 Jian Project. 保留所有权利。</p>
-            </div>
-            <div class="beian">
-                <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">宁ICP备2026000185号</a>
-                <span>｜</span>
-                <a href="https://beian.mps.gov.cn" target="_blank" rel="noopener noreferrer">
-                    <img src="/beian.png" alt="公安备案">宁公网安备64022102000165号                </a>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        (function () {
-            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-            const navLinks = document.querySelector('.nav-links');
-            if (!mobileMenuBtn || !navLinks) return;
-
-            mobileMenuBtn.addEventListener('click', () => {
-                navLinks.classList.toggle('active');
-                mobileMenuBtn.querySelector('i').classList.toggle('fa-bars');
-                mobileMenuBtn.querySelector('i').classList.toggle('fa-times');
-            });
-
-            document.querySelectorAll('.nav-links a').forEach(link => {
-                link.addEventListener('click', () => {
-                    navLinks.classList.remove('active');
-                    mobileMenuBtn.querySelector('i').classList.add('fa-bars');
-                    mobileMenuBtn.querySelector('i').classList.remove('fa-times');
-                });
-            });
-
-            window.addEventListener('resize', () => {
-                if (window.innerWidth > 1024) {
-                    navLinks.classList.remove('active');
-                    const icon = mobileMenuBtn.querySelector('i');
-                    if (icon) {
-                        icon.classList.add('fa-bars');
-                        icon.classList.remove('fa-times');
-                    }
-                }
-            });
-        })();
-
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                // API 文档侧栏用 hash 切节，不走整页锚点平滑滚动
-                if (this.closest('#apiSidebar, .page-main--docs')) return;
-                const targetId = this.getAttribute('href');
-                if (!targetId || targetId === '#') return;
-                const targetElement = document.querySelector(targetId);
-                if (!targetElement) return;
-                e.preventDefault();
-                window.scrollTo({
-                    top: targetElement.offsetTop - 80,
-                    behavior: 'smooth'
-                });
-            });
-        });
-    </script>
+    <p class="foot">
+      <a href="https://github.com/Jian11323/jian11323.github.io" target="_blank" rel="noopener">本仓库源码</a>
+      · 版权所有 © 2025 – 2026 Jian11323 / Jian Project
+    </p>
+  </main>
 </body>
 </html>
